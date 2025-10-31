@@ -36,21 +36,21 @@ def get_article_by_id(article_id):
     conn.close()
     return row
 
-def insert_article(name, categorie, unite, commentaire, contenance):
+def insert_article(name, categorie, unite, commentaire, contenance, purchase_price=None):
     conn = get_conn()
     conn.execute("""
-        INSERT INTO buvette_articles (name, categorie, unite, commentaire, contenance)
-        VALUES (?, ?, ?, ?, ?)
-    """, (name, categorie, unite, commentaire, contenance))
+        INSERT INTO buvette_articles (name, categorie, unite, commentaire, contenance, purchase_price)
+        VALUES (?, ?, ?, ?, ?, ?)
+    """, (name, categorie, unite, commentaire, contenance, purchase_price))
     conn.commit()
     conn.close()
 
-def update_article(article_id, name, categorie, unite, commentaire, contenance):
+def update_article(article_id, name, categorie, unite, commentaire, contenance, purchase_price=None):
     conn = get_conn()
     conn.execute("""
-        UPDATE buvette_articles SET name=?, categorie=?, unite=?, commentaire=?, contenance=?
+        UPDATE buvette_articles SET name=?, categorie=?, unite=?, commentaire=?, contenance=?, purchase_price=?
         WHERE id=?
-    """, (name, categorie, unite, commentaire, contenance, article_id))
+    """, (name, categorie, unite, commentaire, contenance, purchase_price, article_id))
     conn.commit()
     conn.close()
 

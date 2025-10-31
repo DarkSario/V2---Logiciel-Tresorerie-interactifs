@@ -132,6 +132,9 @@ def upgrade_db_structure():
         
         # Ajouter la colonne 'commentaire' à buvette_inventaire_lignes si elle n'existe pas
         add_column_if_not_exists("buvette_inventaire_lignes", "commentaire", "TEXT")
+        
+        # Ajouter la colonne 'purchase_price' à buvette_articles si elle n'existe pas
+        add_column_if_not_exists("buvette_articles", "purchase_price", "REAL")
 
         def create_table_if_not_exists(name, sql):
             try:
@@ -198,7 +201,8 @@ def upgrade_db_structure():
                 unite TEXT,
                 contenance TEXT,
                 commentaire TEXT,
-                stock INTEGER DEFAULT 0
+                stock INTEGER DEFAULT 0,
+                purchase_price REAL
             )
         """)
         create_table_if_not_exists("buvette_achats", """
@@ -569,7 +573,9 @@ def init_db():
                 categorie TEXT,
                 unite TEXT,
                 contenance TEXT,
-                commentaire TEXT
+                commentaire TEXT,
+                stock INTEGER DEFAULT 0,
+                purchase_price REAL
             )
         """)
         c.execute("""

@@ -17,6 +17,7 @@ class ArticleDialog(tk.Toplevel):
         self.unite_var = tk.StringVar()
         self.contenance_var = tk.StringVar()
         self.comment_var = tk.StringVar()
+        self.purchase_price_var = tk.DoubleVar()
 
         tk.Label(self, text="Name :").pack(pady=4)
         tk.Entry(self, textvariable=self.nom_var, width=30).pack()
@@ -29,6 +30,8 @@ class ArticleDialog(tk.Toplevel):
         self.contenance_cb = ttk.Combobox(self, textvariable=self.contenance_var, state="readonly", width=10)
         self.contenance_cb["values"] = contenance_options
         self.contenance_cb.pack()
+        tk.Label(self, text="Prix achat / unité (€) :").pack(pady=4)
+        tk.Entry(self, textvariable=self.purchase_price_var, width=15).pack()
         tk.Label(self, text="Commentaire :").pack(pady=4)
         tk.Entry(self, textvariable=self.comment_var, width=35).pack()
 
@@ -47,6 +50,8 @@ class ArticleDialog(tk.Toplevel):
             self.categorie_var.set(r["categorie"])
             self.unite_var.set(r["unite"])
             self.contenance_var.set(r["contenance"] if r["contenance"] else "")
+            if "purchase_price" in r.keys() and r["purchase_price"] is not None:
+                self.purchase_price_var.set(r["purchase_price"])
             self.comment_var.set(r["commentaire"])
 
     def save(self):
@@ -58,10 +63,16 @@ class ArticleDialog(tk.Toplevel):
         unite = self.unite_var.get().strip()
         contenance = self.contenance_var.get().strip()
         comment = self.comment_var.get().strip()
+        try:
+            # Get purchase price, handling empty or invalid input
+            purchase_price = self.purchase_price_var.get()
+        except tk.TclError:
+            # TclError occurs when the DoubleVar field is empty or contains invalid data
+            purchase_price = None
         if self.article_id:
-            db.update_article(self.article_id, name, categorie, unite, comment, contenance)
+            db.update_article(self.article_id, name, categorie, unite, comment, contenance, purchase_price)
         else:
-            db.insert_article(name, categorie, unite, comment, contenance)
+            db.insert_article(name, categorie, unite, comment, contenance, purchase_price)
         if self.on_save:
             self.on_save()
         self.destroy()
