@@ -414,7 +414,7 @@ class AddLineDialog(tk.Toplevel):
                 
                 # Insert new article using existing function
                 try:
-                    buvette_db.insert_article(name, categorie, "", contenance, "")
+                    buvette_db.insert_article(name, categorie, "", "", contenance)
                     # Get the newly created article's ID
                     articles = buvette_db.list_articles()
                     article = next((a for a in articles if a["name"] == name), None)

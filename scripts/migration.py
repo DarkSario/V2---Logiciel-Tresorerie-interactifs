@@ -23,6 +23,15 @@ MIGRATIONS = [
         "check": "PRAGMA table_info(events);",
         "trigger": lambda columns: not any(c[1]=="description" for c in columns)
     },
+    # Ajout du prix d'achat unitaire pour les articles de buvette
+    {
+        "desc": "Ajout colonne 'purchase_price' à buvette_articles si absente",
+        "sql": [
+            "ALTER TABLE buvette_articles ADD COLUMN purchase_price REAL"
+        ],
+        "check": "PRAGMA table_info(buvette_articles);",
+        "trigger": lambda columns: not any(c[1]=="purchase_price" for c in columns)
+    },
     # Ajouter d'autres migrations ici sous forme de dict
     # ...
 ]

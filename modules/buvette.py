@@ -53,11 +53,12 @@ class BuvetteModule:
         frame = ttk.Frame(self.notebook)
         self.notebook.add(frame, text="Articles")
 
-        self.articles_tree = ttk.Treeview(frame, columns=("name", "categorie", "unite", "contenance", "commentaire"), show="headings")
+        self.articles_tree = ttk.Treeview(frame, columns=("name", "categorie", "unite", "contenance", "purchase_price", "commentaire"), show="headings")
         self.articles_tree.heading("name", text="Name")
         self.articles_tree.heading("categorie", text="Catégorie")
         self.articles_tree.heading("unite", text="Unité")
         self.articles_tree.heading("contenance", text="Contenance")
+        self.articles_tree.heading("purchase_price", text="Prix achat/unité (€)")
         self.articles_tree.heading("commentaire", text="Commentaire")
         self.articles_tree.pack(fill=tk.BOTH, expand=True, side=tk.LEFT, padx=3, pady=3)
 
@@ -74,9 +75,12 @@ class BuvetteModule:
             for row in self.articles_tree.get_children():
                 self.articles_tree.delete(row)
             for a in list_articles():
+                purchase_price_display = ""
+                if "purchase_price" in a.keys() and a["purchase_price"] is not None:
+                    purchase_price_display = f"{a['purchase_price']:.2f}"
                 self.articles_tree.insert(
                     "", "end", iid=a["id"],
-                    values=(a["name"], a["categorie"], a["unite"], a["contenance"] if a["contenance"] is not None else "", a["commentaire"])
+                    values=(a["name"], a["categorie"], a["unite"], a["contenance"] if a["contenance"] is not None else "", purchase_price_display, a["commentaire"])
                 )
         except Exception as e:
             messagebox.showerror("Erreur", handle_exception(e, "Erreur lors de l'affichage des articles."))
