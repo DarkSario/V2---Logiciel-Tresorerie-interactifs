@@ -195,6 +195,10 @@ class BuvetteModule:
         tk.Button(btn_frame, text="Modifier", command=self.edit_inventaire).pack(fill=tk.X, pady=2)
         tk.Button(btn_frame, text="Supprimer", command=self.del_inventaire).pack(fill=tk.X, pady=2)
         tk.Button(btn_frame, text="Voir lignes", command=self.show_lignes_inventaire).pack(fill=tk.X, pady=2)
+        # Separator
+        ttk.Separator(btn_frame, orient='horizontal').pack(fill=tk.X, pady=10)
+        # New detailed inventory button
+        tk.Button(btn_frame, text="Nouvel inventaire\ndétaillé", command=self.add_detailed_inventaire, bg="#4CAF50", fg="white").pack(fill=tk.X, pady=2)
 
     def refresh_inventaires(self):
         try:
@@ -239,6 +243,13 @@ class BuvetteModule:
             LignesInventaireDialog(self.top, sel)
         else:
             messagebox.showwarning("Sélection", "Sélectionner un inventaire pour voir les lignes.")
+
+    def add_detailed_inventaire(self):
+        """Open the detailed inventory dialog."""
+        from ui.inventory_lines_dialog import InventoryLinesDialog
+        InventoryLinesDialog(self.top)
+        # Refresh inventory list after dialog closes
+        self.refresh_inventaires()
 
     # ------------------ TAB MOUVEMENTS ------------------
     def create_tab_mouvements(self):
