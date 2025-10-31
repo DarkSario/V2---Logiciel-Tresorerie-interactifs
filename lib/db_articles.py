@@ -22,10 +22,11 @@ import time
 from functools import wraps
 from db.db import get_db_file
 
-# Configuration for retry logic
-DEFAULT_TIMEOUT = 30.0  # seconds
-MAX_RETRIES = 5
-INITIAL_BACKOFF = 0.1  # seconds
+# Configuration for retry logic and database connections
+# These constants are also used by migration scripts
+DEFAULT_TIMEOUT = 30.0  # seconds - timeout for database connections
+MAX_RETRIES = 5  # maximum number of retry attempts on lock
+INITIAL_BACKOFF = 0.1  # seconds - initial backoff time
 
 def with_retry(func):
     """
@@ -86,12 +87,16 @@ def column_exists(cursor, table, column):
     
     Args:
         cursor: Database cursor
-        table: Table name
+        table: Table name (must be a valid identifier)
         column: Column name
         
     Returns:
         bool: True if column exists, False otherwise
     """
+    # Validate table name to prevent SQL injection (alphanumeric and underscore only)
+    if not table.replace('_', '').isalnum():
+        raise ValueError(f"Invalid table name: {table}")
+    
     cursor.execute(f"PRAGMA table_info({table})")
     columns = [row[1] for row in cursor.fetchall()]
     return column in columns

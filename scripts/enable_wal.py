@@ -20,6 +20,12 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 
 from db.db import get_db_file
 
+# Import timeout constant for consistency
+try:
+    from lib.db_articles import DEFAULT_TIMEOUT
+except ImportError:
+    DEFAULT_TIMEOUT = 30.0  # Fallback if import fails
+
 def enable_wal(db_path):
     """
     Enable WAL mode on the specified database.
@@ -37,7 +43,7 @@ def enable_wal(db_path):
     print(f"Database: {db_path}")
     
     try:
-        conn = sqlite3.connect(db_path, timeout=30.0)
+        conn = sqlite3.connect(db_path, timeout=DEFAULT_TIMEOUT)
         cursor = conn.cursor()
         
         # Check current journal mode

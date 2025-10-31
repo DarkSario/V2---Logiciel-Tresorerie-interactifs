@@ -22,6 +22,12 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 
 from db.db import get_db_file
 
+# Import timeout constant for consistency
+try:
+    from lib.db_articles import DEFAULT_TIMEOUT
+except ImportError:
+    DEFAULT_TIMEOUT = 30.0  # Fallback if import fails
+
 def backup_database(db_path):
     """
     Create a backup of the database file.
@@ -86,7 +92,7 @@ def migrate_add_purchase_price():
     conn = None
     try:
         # Connect with a reasonable timeout
-        conn = sqlite3.connect(db_path, timeout=30.0)
+        conn = sqlite3.connect(db_path, timeout=DEFAULT_TIMEOUT)
         cursor = conn.cursor()
         
         # Begin transaction
