@@ -171,3 +171,5 @@ Potential enhancements for future PRs:
 **PR Type**: Bug Fix + Enhancement  
 **Priority**: High (fixes production database locking issues)  
 **Risk Level**: Low (backward compatible, automatic backups)
+
+**Branch**: fix/db-stability
