@@ -247,7 +247,10 @@ class BuvetteModule:
     def add_detailed_inventaire(self):
         """Open the detailed inventory dialog."""
         from ui.inventory_lines_dialog import InventoryLinesDialog
-        InventoryLinesDialog(self.top)
+        dialog = InventoryLinesDialog(self.top)
+        # Make dialog modal and wait for it to close before refreshing
+        dialog.grab_set()
+        self.top.wait_window(dialog)
         # Refresh inventory list after dialog closes
         self.refresh_inventaires()
 

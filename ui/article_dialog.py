@@ -130,15 +130,9 @@ class ArticleDialog(tk.Toplevel):
         # Get purchase price, handling empty or invalid input
         try:
             purchase_price = self.purchase_price_var.get()
-            # If it's 0.0 and the field was empty, set to None
+            # If the value is 0.0, treat as None (empty field)
             if purchase_price == 0.0:
-                try:
-                    # Check if field is actually empty
-                    raw_value = self.purchase_price_var.get()
-                    if raw_value == 0.0:
-                        purchase_price = None
-                except:
-                    purchase_price = None
+                purchase_price = None
         except tk.TclError:
             # TclError occurs when the DoubleVar field is empty or contains invalid data
             purchase_price = None

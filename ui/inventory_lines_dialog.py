@@ -312,11 +312,11 @@ class InventoryLinesDialog(tk.Toplevel):
                 article_id = line["article_id"]
                 quantite = line["quantite"]
                 
-                # Insert line
+                # Insert line (with commentaire column for consistency)
                 cursor.execute("""
-                    INSERT INTO buvette_inventaire_lignes (inventaire_id, article_id, quantite)
-                    VALUES (?, ?, ?)
-                """, (inv_id, article_id, quantite))
+                    INSERT INTO buvette_inventaire_lignes (inventaire_id, article_id, quantite, commentaire)
+                    VALUES (?, ?, ?, ?)
+                """, (inv_id, article_id, quantite, ""))
                 
                 # Update article stock (stock = quantity counted)
                 update_article_stock(article_id, quantite)
