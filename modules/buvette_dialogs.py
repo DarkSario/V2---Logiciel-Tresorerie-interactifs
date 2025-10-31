@@ -64,8 +64,10 @@ class ArticleDialog(tk.Toplevel):
         contenance = self.contenance_var.get().strip()
         comment = self.comment_var.get().strip()
         try:
+            # Get purchase price, handling empty or invalid input
             purchase_price = self.purchase_price_var.get()
         except tk.TclError:
+            # TclError occurs when the DoubleVar field is empty or contains invalid data
             purchase_price = None
         if self.article_id:
             db.update_article(self.article_id, name, categorie, unite, comment, contenance, purchase_price)

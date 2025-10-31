@@ -574,6 +574,7 @@ def init_db():
                 unite TEXT,
                 contenance TEXT,
                 commentaire TEXT,
+                stock INTEGER DEFAULT 0,
                 purchase_price REAL
             )
         """)

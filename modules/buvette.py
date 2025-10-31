@@ -76,7 +76,7 @@ class BuvetteModule:
                 self.articles_tree.delete(row)
             for a in list_articles():
                 purchase_price_display = ""
-                if "purchase_price" in a.keys() and a["purchase_price"] is not None:
+                if "purchase_price" in a and a["purchase_price"] is not None:
                     purchase_price_display = f"{a['purchase_price']:.2f}"
                 self.articles_tree.insert(
                     "", "end", iid=a["id"],
