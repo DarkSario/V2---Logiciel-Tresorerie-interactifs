@@ -1,7 +1,6 @@
 import logging
 import os
 import runpy
-from pathlib import Path
 
 # Optional dotenv
 try:

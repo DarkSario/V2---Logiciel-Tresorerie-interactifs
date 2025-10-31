@@ -1,5 +1,5 @@
 import re
-from typing import Any, Dict, Iterable
+from typing import Any, Dict
 
 def is_email(email):
     """
