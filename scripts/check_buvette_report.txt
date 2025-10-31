@@ -1,0 +1,58 @@
+
+[95m[1m================================================================================[0m
+[95m[1m                    SCRIPT DE VÉRIFICATION DU MODULE BUVETTE                    [0m
+[95m[1m================================================================================[0m
+
+Ce script identifie les incohérences et problèmes dans le module buvette
+avant d'appliquer les corrections.
+
+Répertoire de travail: /home/runner/work/V2---Logiciel-Tresorerie-interactifs/V2---Logiciel-Tresorerie-interactifs
+
+
+[94m[1m--- Vérification de la structure des fichiers ---[0m
+[92m✓ Fichier trouvé: db/db.py[0m
+[92m✓ Fichier trouvé: modules/buvette_db.py[0m
+[92m✓ Fichier trouvé: modules/buvette.py[0m
+[92m✓ Fichier trouvé: modules/buvette_inventaire_db.py[0m
+[92m✓ Fichier trouvé: tests/test_buvette_inventaire.py[0m
+
+[94m[1m--- Vérification du schéma de base de données ---[0m
+[92m✓ Colonne 'date_mouvement' trouvée dans le schéma[0m
+[92m✓ Colonne 'type_mouvement' trouvée dans le schéma[0m
+[92m✓ Colonne 'motif' trouvée dans le schéma (pas 'commentaire')[0m
+
+[94m[1m--- Vérification de modules/buvette_db.py ---[0m
+[92m✓ list_mouvements contient les alias AS date/AS type[0m
+[92m✓ get_mouvement_by_id contient les alias AS date/AS type[0m
+[92m✓ Aucun problème trouvé dans buvette_db.py[0m
+
+[94m[1m--- Vérification de modules/buvette.py ---[0m
+[92m✓ InventaireDialog contient columnconfigure[0m
+[92m✓ refresh_lignes utilise article_name[0m
+[92m✓ refresh_bilan protège les agrégations[0m
+[92m✓ Aucun problème trouvé dans buvette.py[0m
+
+[94m[1m--- Exécution des tests unitaires ---[0m
+============================= test session starts ==============================
+platform linux -- Python 3.12.3, pytest-8.4.2, pluggy-1.6.0 -- /usr/bin/python
+cachedir: .pytest_cache
+rootdir: /home/runner/work/V2---Logiciel-Tresorerie-interactifs/V2---Logiciel-Tresorerie-interactifs
+collecting ... collected 7 items
+
+tests/test_buvette_inventaire.py::TestBuvetteInventaire::test_insert_inventaire_with_invalid_type_raises_error PASSED [ 14%]
+tests/test_buvette_inventaire.py::TestBuvetteInventaire::test_insert_inventaire_with_valid_type_apres PASSED [ 28%]
+tests/test_buvette_inventaire.py::TestBuvetteInventaire::test_insert_inventaire_with_valid_type_avant PASSED [ 42%]
+tests/test_buvette_inventaire.py::TestBuvetteInventaire::test_insert_inventaire_with_valid_type_hors_evenement PASSED [ 57%]
+tests/test_buvette_inventaire.py::TestBuvetteInventaire::test_list_inventaires PASSED [ 71%]
+tests/test_buvette_inventaire.py::TestBuvetteInventaire::test_update_inventaire_with_invalid_type_raises_error PASSED [ 85%]
+tests/test_buvette_inventaire.py::TestBuvetteInventaire::test_update_inventaire_with_valid_type PASSED [100%]
+
+============================== 7 passed in 0.07s ===============================
+
+[92m✓ Tous les tests sont passés[0m
+
+[95m[1m================================================================================[0m
+[95m[1m                            RÉSUMÉ DES VÉRIFICATIONS                            [0m
+[95m[1m================================================================================[0m
+
+[92m✓ ✓ Aucun problème détecté ! Le module buvette est conforme.[0m

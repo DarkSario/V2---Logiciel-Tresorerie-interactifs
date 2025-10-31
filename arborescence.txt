@@ -1,0 +1,135 @@
+├── V2 - Logiciel Trésorerie intéractifs - FONCTIONNELLE/
+│   ├── arborescence.txt
+│   ├── association.db
+│   ├── association.db-shm
+│   ├── association.db-wal
+│   ├── env.example
+│   ├── init_db.py
+│   ├── lister_arborescence.py
+│   ├── main.py
+│   ├── README.md
+│   ├── requirements.txt
+│   ├── dashboard/
+│   │   ├── dashboard.py
+│   │   ├── __pycache__/
+│   │   │   ├── dashboard.cpython-313.pyc
+│   ├── db/
+│   │   ├── db.py
+│   │   ├── __pycache__/
+│   │   │   ├── db.cpython-313.pyc
+│   ├── dialogs/
+│   │   ├── add_row_dialog.py
+│   │   ├── cloture_confirm_dialog.py
+│   │   ├── depense_dialog.py
+│   │   ├── edit_don_dialog.py
+│   │   ├── edit_event_dialog.py
+│   │   ├── edit_field_dialog.py
+│   │   ├── edit_journal_dialog.py
+│   │   ├── edit_member_dialog.py
+│   │   ├── edit_module_data_dialog.py
+│   │   ├── edit_module_dialog.py
+│   │   ├── edit_stock_dialog.py
+│   │   ├── inventaire_dialog.py
+│   │   ├── __pycache__/
+│   │   │   ├── add_row_dialog.cpython-313.pyc
+│   │   │   ├── cloture_confirm_dialog.cpython-313.pyc
+│   │   │   ├── depense_dialog.cpython-313.pyc
+│   ├── docs/
+│   │   ├── index.md
+│   │   ├── UTILISATEUR.md
+│   ├── exports/
+│   │   ├── exports.py
+│   │   ├── export_bilan_argumente.py
+│   │   ├── ___init___.py
+│   │   ├── __pycache__/
+│   │   │   ├── exports.cpython-313.pyc
+│   │   │   ├── export_bilan_argumente.cpython-313.pyc
+│   ├── logs/
+│   │   ├── app.log
+│   ├── modules/
+│   │   ├── buvette.py
+│   │   ├── buvette_bilan_db.py
+│   │   ├── buvette_bilan_dialogs.py
+│   │   ├── buvette_db.py
+│   │   ├── buvette_dialogs.py
+│   │   ├── buvette_inventaire_db.py
+│   │   ├── buvette_inventaire_dialogs.py
+│   │   ├── buvette_mouvements_db.py
+│   │   ├── buvette_mouvements_dialogs.py
+│   │   ├── categories.py
+│   │   ├── cloture_exercice.py
+│   │   ├── depenses_diverses.py
+│   │   ├── depenses_regulieres.py
+│   │   ├── depots_retraits_banque.py
+│   │   ├── dons_subventions.py
+│   │   ├── events.py
+│   │   ├── event_caisses.py
+│   │   ├── event_caisse_details.py
+│   │   ├── event_depenses.py
+│   │   ├── event_modules.py
+│   │   ├── event_module_data.py
+│   │   ├── event_module_fields.py
+│   │   ├── event_payments.py
+│   │   ├── event_recettes.py
+│   │   ├── exports.py
+│   │   ├── fournisseurs.py
+│   │   ├── historique_clotures.py
+│   │   ├── historique_inventaire.py
+│   │   ├── inventaire.py
+│   │   ├── journal.py
+│   │   ├── members.py
+│   │   ├── model_colonnes.py
+│   │   ├── mouvements_stock.py
+│   │   ├── retrocessions_ecoles.py
+│   │   ├── solde_ouverture.py
+│   │   ├── stock.py
+│   │   ├── stock_inventaire.py
+│   │   ├── stock_stats.py
+│   │   ├── __pycache__/
+│   │   │   ├── buvette.cpython-313.pyc
+│   │   │   ├── buvette_db.cpython-313.pyc
+│   │   │   ├── buvette_inventaire_db.cpython-313.pyc
+│   │   │   ├── buvette_mouvements_db.cpython-313.pyc
+│   │   │   ├── cloture_exercice.cpython-313.pyc
+│   │   │   ├── depenses_diverses.cpython-313.pyc
+│   │   │   ├── depenses_regulieres.cpython-313.pyc
+│   │   │   ├── depots_retraits_banque.cpython-313.pyc
+│   │   │   ├── dons_subventions.cpython-313.pyc
+│   │   │   ├── events.cpython-313.pyc
+│   │   │   ├── event_caisses.cpython-313.pyc
+│   │   │   ├── event_depenses.cpython-313.pyc
+│   │   │   ├── event_modules.cpython-313.pyc
+│   │   │   ├── event_payments.cpython-313.pyc
+│   │   │   ├── event_recettes.cpython-313.pyc
+│   │   │   ├── exports.cpython-313.pyc
+│   │   │   ├── fournisseurs.cpython-313.pyc
+│   │   │   ├── historique_clotures.cpython-313.pyc
+│   │   │   ├── journal.cpython-313.pyc
+│   │   │   ├── members.cpython-313.pyc
+│   │   │   ├── model_colonnes.cpython-313.pyc
+│   │   │   ├── retrocessions_ecoles.cpython-313.pyc
+│   │   │   ├── solde_ouverture.cpython-313.pyc
+│   │   │   ├── stock.cpython-313.pyc
+│   ├── scripts/
+│   │   ├── migration.py
+│   ├── tests/
+│   │   ├── test_utils.py
+│   ├── ui/
+│   │   ├── ui_utils.py
+│   ├── utils/
+│   │   ├── app_logger.py
+│   │   ├── backup_restore.py
+│   │   ├── cloture_exercice.py
+│   │   ├── csv_helpers.py
+│   │   ├── date_helpers.py
+│   │   ├── error_handler.py
+│   │   ├── notify.py
+│   │   ├── pdf_helpers.py
+│   │   ├── validation.py
+│   │   ├── zip_helpers.py
+│   │   ├── __pycache__/
+│   │   │   ├── app_logger.cpython-313.pyc
+│   │   │   ├── backup_restore.cpython-313.pyc
+│   │   │   ├── date_helpers.cpython-313.pyc
+│   │   │   ├── error_handler.cpython-313.pyc
+│   │   │   ├── validation.cpython-313.pyc

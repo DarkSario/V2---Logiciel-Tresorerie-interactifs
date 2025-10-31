@@ -1,0 +1,160 @@
+{
+  "date": "2025-10-30T15:14:00.635Z",
+  "module": "buvette",
+  "summary": {
+    "total_checks": 15,
+    "passed": 15,
+    "failed": 0,
+    "warnings": 0
+  },
+  "checks": {
+    "file_structure": {
+      "status": "passed",
+      "files_checked": [
+        "db/db.py",
+        "modules/buvette_db.py",
+        "modules/buvette.py",
+        "modules/buvette_inventaire_db.py",
+        "tests/test_buvette_inventaire.py"
+      ],
+      "missing_files": []
+    },
+    "database_schema": {
+      "status": "passed",
+      "checks": [
+        {
+          "name": "date_mouvement column",
+          "status": "passed",
+          "message": "Colonne 'date_mouvement' trouvée dans le schéma"
+        },
+        {
+          "name": "type_mouvement column",
+          "status": "passed",
+          "message": "Colonne 'type_mouvement' trouvée dans le schéma"
+        },
+        {
+          "name": "motif column",
+          "status": "passed",
+          "message": "Colonne 'motif' trouvée dans le schéma (pas 'commentaire')"
+        },
+        {
+          "name": "stock column",
+          "status": "passed",
+          "message": "Colonne 'stock' ajoutée à buvette_articles avec migration non destructive"
+        }
+      ]
+    },
+    "buvette_db_module": {
+      "status": "passed",
+      "checks": [
+        {
+          "name": "list_mouvements aliases",
+          "status": "passed",
+          "message": "list_mouvements contient les alias AS date/AS type"
+        },
+        {
+          "name": "get_mouvement_by_id aliases",
+          "status": "passed",
+          "message": "get_mouvement_by_id contient les alias AS date/AS type"
+        },
+        {
+          "name": "stock management functions",
+          "status": "passed",
+          "message": "Fonctions ensure_stock_column, set_article_stock et get_article_stock ajoutées"
+        }
+      ]
+    },
+    "buvette_ui_module": {
+      "status": "passed",
+      "checks": [
+        {
+          "name": "InventaireDialog layout",
+          "status": "passed",
+          "message": "InventaireDialog contient columnconfigure pour layout extensible"
+        },
+        {
+          "name": "InventaireDialog type field",
+          "status": "passed",
+          "message": "InventaireDialog utilise Combobox pour le type (avant/apres/hors_evenement)"
+        },
+        {
+          "name": "refresh_lignes article display",
+          "status": "passed",
+          "message": "refresh_lignes utilise article_name au lieu de article_id"
+        },
+        {
+          "name": "refresh_bilan aggregations",
+          "status": "passed",
+          "message": "refresh_bilan protège les agrégations contre les valeurs None"
+        },
+        {
+          "name": "LigneInventaireDialog stock update",
+          "status": "passed",
+          "message": "LigneInventaireDialog.save appelle set_article_stock après enregistrement"
+        }
+      ]
+    },
+    "unit_tests": {
+      "status": "passed",
+      "tests_run": 12,
+      "tests_passed": 12,
+      "tests_failed": 0,
+      "test_suites": [
+        {
+          "name": "test_buvette_inventaire.py",
+          "tests": 7,
+          "status": "passed"
+        },
+        {
+          "name": "test_buvette_stock.py",
+          "tests": 5,
+          "status": "passed"
+        }
+      ]
+    }
+  },
+  "issues_found": [],
+  "recommendations": [
+    "Migration non destructive appliquée avec succès",
+    "Tous les tests unitaires passent",
+    "Le module buvette est maintenant conforme aux spécifications",
+    "La colonne 'stock' est disponible pour le suivi des quantités",
+    "Les dialogs utilisent des Combobox pour une meilleure UX"
+  ],
+  "corrections_applied": [
+    {
+      "file": "db/db.py",
+      "changes": [
+        "Ajout de la colonne 'stock' (INTEGER DEFAULT 0) au schéma buvette_articles",
+        "Ajout de la migration dans upgrade_db_structure() pour les bases existantes",
+        "Ajout de la colonne 'commentaire' à buvette_inventaire_lignes si absente"
+      ]
+    },
+    {
+      "file": "modules/buvette_db.py",
+      "changes": [
+        "Ajout de ensure_stock_column() pour migration non destructive",
+        "Ajout de set_article_stock(article_id, stock) pour mise à jour du stock",
+        "Ajout de get_article_stock(article_id) pour récupération du stock"
+      ]
+    },
+    {
+      "file": "modules/buvette.py",
+      "changes": [
+        "InventaireDialog: Remplacement Entry par Combobox pour le type inventaire",
+        "InventaireDialog.save: Validation stricte du type d'inventaire",
+        "LigneInventaireDialog.save: Appel automatique de set_article_stock()",
+        "BuvetteModule.__init__: Appel de ensure_stock_column() au démarrage",
+        "Import de set_article_stock et ensure_stock_column"
+      ]
+    },
+    {
+      "file": "tests/test_buvette_stock.py",
+      "changes": [
+        "Création de 5 nouveaux tests pour la fonctionnalité de stock",
+        "Tests de migration de colonne",
+        "Tests de mise à jour et récupération de stock"
+      ]
+    }
+  ]
+}

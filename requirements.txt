@@ -1,0 +1,16 @@
+# Python >= 3.9 recommandé
+tkcalendar>=1.6.1
+pandas>=1.5.0
+matplotlib>=3.7.0
+openpyxl>=3.0.0
+python-docx>=0.8.11
+reportlab>=3.6.0      # Optionnel, pour export PDF
+# Pour prise en charge des CSV/ZIP natifs, rien à ajouter (standard Python)
+# Pour SQLite, inclus dans Python standard
+pytest>=7.0.0         # Pour tests unitaires
+# Logging, datetime, os, sys sont standards
+
+# (Optionnel) Pour développement et packaging
+# black           # Formatage de code
+# flake8          # Linting
+# coverage        # Analyse de couverture de tests
