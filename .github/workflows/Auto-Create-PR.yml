@@ -1,0 +1,88 @@
+  - name: Configure git user
+    run: |
+      git config user.name "github-actions[bot]"
+      git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+  - name: Create branch and apply patch
+    if: ${{ inputs.mode == 'apply_patch' }}
+    run: |
+      BRANCH="${{ inputs.pr_branch }}"
+      PATCH="${{ inputs.patch_path }}"
+      echo "Creating branch: $BRANCH"
+      git switch -c "$BRANCH"
+      if [ ! -f "$PATCH" ]; then
+        echo "Patch file not found: $PATCH"
+        exit 1
+      fi
+      echo "Applying patch: $PATCH"
+      git apply --index "$PATCH"
+      if git diff --staged --quiet; then
+        echo "No staged changes after applying patch. Exiting."
+        # nothing to push, but we still try to open a PR (will fail if branch already exists with no changes)
+        exit 1
+      fi
+      git commit -m "${{ inputs.commit_message }}"
+      echo "Pushing branch to origin..."
+      git push --set-upstream origin "$BRANCH"
+
+  - name: Create PR from an existing branch
+    if: ${{ inputs.mode == 'create_pr_from_branch' }}
+    uses: actions/github-script@v6
+    with:
+      script: |
+        const owner = context.repo.owner;
+        const repo = context.repo.repo;
+        const head = `${{ inputs.source_branch }}`;
+        const base = `${{ inputs.base }}`;
+        if (!head) {
+          core.setFailed("Input 'source_branch' is required when mode=create_pr_from_branch");
+          return;
+        }
+        const title = `${{ inputs.pr_title }}`;
+        const body = `${{ inputs.pr_body }}`;
+        try {
+          const response = await github.rest.pulls.create({
+            owner,
+            repo,
+            head,
+            base,
+            title,
+            body,
+          });
+          core.info(`PR created: ${response.data.html_url}`);
+          core.setOutput("pr_url", response.data.html_url);
+          core.setOutput("pr_number", response.data.number);
+        } catch (err) {
+          core.setFailed("Failed to create PR: " + err.message);
+        }
+
+  - name: Create PR for branch created from patch
+    if: ${{ inputs.mode == 'apply_patch' }}
+    uses: actions/github-script@v6
+    with:
+      script: |
+        const owner = context.repo.owner;
+        const repo = context.repo.repo;
+        const head = `${{ inputs.pr_branch }}`;
+        const base = `${{ inputs.base }}`;
+        const title = `${{ inputs.pr_title }}`;
+        const body = `${{ inputs.pr_body }}`;
+        try {
+          const response = await github.rest.pulls.create({
+            owner,
+            repo,
+            head,
+            base,
+            title,
+            body,
+          });
+          core.info(`PR created: ${response.data.html_url}`);
+          core.setOutput("pr_url", response.data.html_url);
+          core.setOutput("pr_number", response.data.number);
+        } catch (err) {
+          core.setFailed("Failed to create PR: " + err.message);
+        }
+
+  - name: Show PR URL
+    run: |
+      echo "Workflow finished."
