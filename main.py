@@ -209,8 +209,32 @@ class MainApp(tk.Tk):
 
     @handle_errors
     def menu_upgrade_db_structure(self):
-        if messagebox.askyesno("Mise à jour", "Voulez-vous mettre à jour/adapter la structure de la base de données ?\n(Permet d'ajouter d'éventuelles colonnes manquantes sans perdre vos données)"):
-            upgrade_db_structure()
+        if messagebox.askyesno("Mise à jour", "Voulez-vous mettre à jour/adapter la structure de la base de données ?\n\nCette opération va :\n- Créer une sauvegarde automatique timestampée\n- Ajouter les colonnes manquantes sans perte de données\n- Optimiser la base de données (WAL mode)\n- Générer un rapport détaillé\n\nSouhaitez-vous continuer ?"):
+            # Utiliser le nouveau script de migration sûr
+            try:
+                import subprocess
+                db_path = get_db_file()
+                result = subprocess.run(
+                    [sys.executable, "scripts/update_db_structure.py", "--db-path", db_path],
+                    capture_output=True,
+                    text=True,
+                    cwd=os.path.dirname(os.path.abspath(__file__))
+                )
+                
+                if result.returncode == 0:
+                    messagebox.showinfo(
+                        "Succès",
+                        "Mise à jour de la structure terminée avec succès !\n\n"
+                        "Un rapport détaillé a été généré dans le répertoire scripts/.\n"
+                        "Une sauvegarde de votre base a été créée automatiquement."
+                    )
+                else:
+                    messagebox.showerror(
+                        "Erreur",
+                        f"La mise à jour a échoué.\n\nDétails :\n{result.stderr[:500]}"
+                    )
+            except Exception as e:
+                messagebox.showerror("Erreur", f"Impossible d'exécuter la mise à jour : {e}")
 
     @handle_errors
     def reset_data(self):
