@@ -67,7 +67,10 @@ class MainApp(tk.Tk):
         
         # Vérification automatique du schéma de base de données
         if os.path.exists(DB_FILE):
-            startup_schema_check.run_check(self, DB_FILE)
+            try:
+                startup_schema_check.run_check(self, DB_FILE)
+            except Exception as e:
+                print(f"Warning: Schema check failed: {e}")
         
         self.create_menu()
         self.create_home_buttons()

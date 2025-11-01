@@ -16,10 +16,15 @@ import os
 import sys
 import sqlite3
 import subprocess
+import re
+import importlib.util
 import tkinter as tk
 from tkinter import Toplevel, Label, Button, Text, Scrollbar, messagebox
 from pathlib import Path
 from typing import Dict, List, Tuple, Set
+
+# Constants
+ERROR_MESSAGE_MAX_LENGTH = 500
 
 
 def get_expected_schema() -> Dict[str, Set[str]]:
@@ -30,9 +35,21 @@ def get_expected_schema() -> Dict[str, Set[str]]:
         Dictionnaire {table_name: set(column_names)}
     """
     # Importer le schéma de référence depuis update_db_structure.py
-    sys.path.insert(0, str(Path(__file__).parent.parent / "scripts"))
+    scripts_dir = Path(__file__).parent.parent / "scripts"
+    script_path = scripts_dir / "update_db_structure.py"
+    
     try:
-        from update_db_structure import REFERENCE_SCHEMA
+        # Charger le module de manière dynamique
+        spec = importlib.util.spec_from_file_location("update_db_structure", script_path)
+        if spec is None or spec.loader is None:
+            print(f"Warning: Could not load spec for {script_path}")
+            return {}
+        
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        
+        # Accéder au REFERENCE_SCHEMA
+        REFERENCE_SCHEMA = module.REFERENCE_SCHEMA
         
         # Convertir le format {table: {col: (type, default)}} en {table: set(cols)}
         expected = {}
@@ -40,12 +57,9 @@ def get_expected_schema() -> Dict[str, Set[str]]:
             expected[table] = set(columns.keys())
         
         return expected
-    except ImportError as e:
+    except Exception as e:
         print(f"Warning: Could not import REFERENCE_SCHEMA: {e}")
         return {}
-    finally:
-        if str(Path(__file__).parent.parent / "scripts") in sys.path:
-            sys.path.remove(str(Path(__file__).parent.parent / "scripts"))
 
 
 def get_real_schema(db_path: str) -> Dict[str, Set[str]]:
@@ -72,7 +86,13 @@ def get_real_schema(db_path: str) -> Dict[str, Set[str]]:
         tables = [row[0] for row in cursor.fetchall()]
         
         for table in tables:
+            # Valider le nom de la table pour éviter l'injection SQL
+            if not re.match(r'^[a-zA-Z_][a-zA-Z0-9_]*$', table):
+                print(f"Warning: Skipping table with invalid name: {table}")
+                continue
+            
             # Obtenir les colonnes de chaque table via PRAGMA table_info
+            # PRAGMA table_info n'accepte pas les paramètres, mais on a validé le nom
             cursor.execute(f"PRAGMA table_info({table})")
             columns = set(row[1] for row in cursor.fetchall())
             schema[table] = columns
@@ -279,6 +299,14 @@ def execute_update(db_path: str, parent_window=None) -> Tuple[bool, str]:
         Tuple (success, message)
     """
     try:
+        # Valider le chemin de la base de données pour éviter l'injection de commandes
+        db_path = os.path.abspath(db_path)
+        if not os.path.exists(db_path):
+            error_msg = f"❌ Le fichier de base de données n'existe pas : {db_path}"
+            if parent_window:
+                messagebox.showerror("Erreur", error_msg, parent=parent_window)
+            return False, error_msg
+        
         # Construire la commande pour exécuter le script
         script_path = Path(__file__).parent.parent / "scripts" / "update_db_structure.py"
         
@@ -286,7 +314,8 @@ def execute_update(db_path: str, parent_window=None) -> Tuple[bool, str]:
             [sys.executable, str(script_path), "--db-path", db_path],
             capture_output=True,
             text=True,
-            cwd=str(Path(__file__).parent.parent)
+            cwd=str(Path(__file__).parent.parent),
+            timeout=120  # Timeout de 2 minutes pour la migration
         )
         
         if result.returncode == 0:
@@ -309,13 +338,18 @@ def execute_update(db_path: str, parent_window=None) -> Tuple[bool, str]:
             
             return True, success_msg
         else:
-            error_msg = f"❌ La mise à jour a échoué.\n\nDétails :\n{result.stderr[:500]}"
+            error_msg = f"❌ La mise à jour a échoué.\n\nDétails :\n{result.stderr[:ERROR_MESSAGE_MAX_LENGTH]}"
             
             if parent_window:
                 messagebox.showerror("Erreur", error_msg, parent=parent_window)
             
             return False, error_msg
             
+    except subprocess.TimeoutExpired:
+        error_msg = "❌ La mise à jour a dépassé le délai d'attente."
+        if parent_window:
+            messagebox.showerror("Erreur", error_msg, parent=parent_window)
+        return False, error_msg
     except Exception as e:
         error_msg = f"❌ Impossible d'exécuter la mise à jour : {e}"
         
@@ -336,13 +370,22 @@ def _open_latest_migration_report():
         if reports:
             latest_report = max(reports, key=os.path.getmtime)
             
+            # Valider que le fichier existe et est bien dans le répertoire scripts
+            if not latest_report.exists() or not latest_report.is_relative_to(scripts_dir):
+                print(f"Invalid report path: {latest_report}")
+                return
+            
             # Ouvrir le fichier avec l'application par défaut du système
-            if sys.platform == "win32":
-                os.startfile(latest_report)
-            elif sys.platform == "darwin":
-                subprocess.run(["open", str(latest_report)])
-            else:
-                subprocess.run(["xdg-open", str(latest_report)])
+            try:
+                if sys.platform == "win32":
+                    os.startfile(str(latest_report))
+                elif sys.platform == "darwin":
+                    subprocess.run(["open", str(latest_report)], check=False, timeout=5)
+                else:
+                    subprocess.run(["xdg-open", str(latest_report)], check=False, timeout=5)
+            except (subprocess.TimeoutExpired, OSError) as e:
+                print(f"Could not open report with default application: {e}")
+                messagebox.showinfo("Rapport", f"Le rapport est disponible ici :\n{latest_report}")
         else:
             messagebox.showwarning("Rapport introuvable", "Aucun rapport de migration trouvé.")
             
