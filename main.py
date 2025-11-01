@@ -8,6 +8,7 @@ from db.db import (
     init_db, is_first_launch, save_init_info, get_connection,
     upgrade_db_structure, get_db_file
 )
+from ui import startup_schema_check
 from modules.events import EventsWindow
 from modules.stock import StockModule
 from modules.buvette import BuvetteModule
@@ -63,6 +64,14 @@ class MainApp(tk.Tk):
         self.title("Gestion Association Les Interactifs des Ecoles")
         if is_first_launch():
             self.init_first_launch()
+        
+        # Vérification automatique du schéma de base de données
+        if os.path.exists(DB_FILE):
+            try:
+                startup_schema_check.run_check(self, DB_FILE)
+            except Exception as e:
+                print(f"Warning: Schema check failed: {e}")
+        
         self.create_menu()
         self.create_home_buttons()
 
