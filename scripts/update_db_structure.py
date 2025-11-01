@@ -395,7 +395,7 @@ class DatabaseMigrator:
         try:
             cursor = conn.cursor()
             
-            # SQLite ne supporte pas les transactions pour ALTER TABLE dans tous les cas,
+            # SQLite ne supporte pas toujours les transactions pour ALTER TABLE,
             # mais on utilise BEGIN pour grouper les opérations
             cursor.execute("BEGIN TRANSACTION")
             
@@ -414,8 +414,9 @@ class DatabaseMigrator:
                         cursor.execute(alter_sql)
                         self.log(f"  ✓ Successfully added column '{col_name}' to table '{table}'")
                     except sqlite3.OperationalError as e:
-                        # La colonne existe peut-être déjà
-                        if "duplicate column name" in str(e).lower():
+                        # La colonne existe peut-être déjà (duplicate column)
+                        error_msg = str(e).lower()
+                        if "duplicate" in error_msg and "column" in error_msg:
                             self.log(f"  ⚠ Column '{col_name}' already exists in table '{table}'", "WARNING")
                         else:
                             raise

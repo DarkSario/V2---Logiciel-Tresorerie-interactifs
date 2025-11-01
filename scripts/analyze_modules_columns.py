@@ -89,7 +89,7 @@ class SQLAnalyzer:
                     self.table_columns[table]["columns"].add(col)
         
         # UPDATE SET
-        for match in re.finditer(r'UPDATE\s+(\w+)\s+SET\s+([^W][^;]+?)(?:WHERE|$)', content, re.IGNORECASE | re.DOTALL):
+        for match in re.finditer(r'UPDATE\s+(\w+)\s+SET\s+([^;]+?)(?:WHERE|;|$)', content, re.IGNORECASE | re.DOTALL):
             table = match.group(1)
             set_clause = match.group(2)
             self.table_columns[table]["files"].add(filepath)

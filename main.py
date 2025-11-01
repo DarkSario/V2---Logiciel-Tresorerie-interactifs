@@ -209,7 +209,18 @@ class MainApp(tk.Tk):
 
     @handle_errors
     def menu_upgrade_db_structure(self):
-        if messagebox.askyesno("Mise à jour", "Voulez-vous mettre à jour/adapter la structure de la base de données ?\n\nCette opération va :\n- Créer une sauvegarde automatique timestampée\n- Ajouter les colonnes manquantes sans perte de données\n- Optimiser la base de données (WAL mode)\n- Générer un rapport détaillé\n\nSouhaitez-vous continuer ?"):
+        # Message d'information pour la migration
+        migration_message = (
+            "Voulez-vous mettre à jour/adapter la structure de la base de données ?\n\n"
+            "Cette opération va :\n"
+            "- Créer une sauvegarde automatique timestampée\n"
+            "- Ajouter les colonnes manquantes sans perte de données\n"
+            "- Optimiser la base de données (WAL mode)\n"
+            "- Générer un rapport détaillé\n\n"
+            "Souhaitez-vous continuer ?"
+        )
+        
+        if messagebox.askyesno("Mise à jour", migration_message):
             # Utiliser le nouveau script de migration sûr
             try:
                 import subprocess
