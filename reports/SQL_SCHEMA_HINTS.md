@@ -38,7 +38,7 @@ Il sert de référence pour les migrations et la maintenance du schéma de base 
 - **membres**: 40 colonnes, référencée dans 3 fichier(s)
 - **mouvements_stock**: 9 colonnes, référencée dans 1 fichier(s)
 - **retrocessions_ecoles**: 100 colonnes, référencée dans 2 fichier(s)
-- **sqlite_master**: 77 colonnes, référencée dans 4 fichier(s)
+- **sqlite_master**: 89 colonnes, référencée dans 4 fichier(s)
 - **stock**: 38 colonnes, référencée dans 5 fichier(s)
 - **tree**: 44 colonnes, référencée dans 0 fichier(s)
 - **valeurs_modeles_colonnes**: 2 colonnes, référencée dans 3 fichier(s)
@@ -1291,17 +1291,21 @@ Il sert de référence pour les migrations et la maintenance du schéma de base 
 - `__name__`
 - `anchor`
 - `bg`
+- `bool`
 - `button_frame`
 - `capture_output`
 - `check`
+- `close_button`
 - `columns`
 - `command`
 - `confirm`
+- `content`
 - `cursor`
 - `cwd`
 - `date`
 - `db_path`
 - `dialog`
+- `encoding`
 - `error_msg`
 - `existing_cols`
 - `expand`
@@ -1310,12 +1314,15 @@ Il sert de référence pour les migrations et la maintenance du schéma de base 
 - `fill`
 - `font`
 - `foreground`
+- `header_color`
 - `header_frame`
+- `header_label`
 - `height`
 - `icon`
 - `ignore_button`
 - `info_label`
 - `info_text`
+- `is_error`
 - `justify`
 - `key`
 - `latest_report`
@@ -1324,6 +1331,7 @@ Il sert de référence pour les migrations et la maintenance du schéma de base 
 - `missing_cols`
 - `missing_columns`
 - `name`
+- `open_button`
 - `padx`
 - `pady`
 - `parent`
@@ -1333,28 +1341,32 @@ Il sert de référence pour les migrations et la maintenance du schéma de base 
 - `real_schema`
 - `recommendation_label`
 - `recommendation_text`
+- `report_path`
 - `reports`
+- `reports_dir`
 - `result`
 - `returncode`
 - `root`
 - `script_path`
-- `scripts_dir`
 - `scrollbar`
 - `show_report`
 - `side`
 - `state`
 - `str`
+- `succes`
 - `success`
 - `success_msg`
 - `successfully`
-- `succès`
 - `table_exists`
 - `table_missing`
 - `tables`
 - `text`
+- `text_color`
 - `text_frame`
 - `text_widget`
 - `timeout`
+- `title`
+- `title_text`
 - `type`
 - `update_button`
 - `user_choice`
