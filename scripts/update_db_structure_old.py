@@ -25,10 +25,10 @@ import shutil
 import argparse
 import traceback
 import subprocess
-import re
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Tuple, Set, Optional
+import yaml
 from difflib import SequenceMatcher
 
 # Force UTF-8 encoding for stdout/stderr on Windows to avoid encoding errors
@@ -37,19 +37,6 @@ try:
     sys.stderr.reconfigure(encoding='utf-8')
 except Exception:
     pass
-
-# Try to import compat_yaml for loading hints
-try:
-    from scripts.compat_yaml import load_hints
-except ImportError:
-    # Fallback if running from scripts/ directory
-    try:
-        from compat_yaml import load_hints
-    except ImportError:
-        load_hints = None
-
-# Valid SQL identifier pattern
-SQL_IDENTIFIER_PATTERN = re.compile(r'^[A-Za-z_][A-Za-z0-9_]*$')
 
 
 # Schéma de référence basé sur l'analyse du code et init_db.py
@@ -346,25 +333,13 @@ class DatabaseMigrator:
         self.schema_hints = None
         self.column_mappings = {}  # Track old_name -> new_name mappings
         self.fuzzy_threshold = fuzzy_threshold  # Configurable fuzzy matching threshold
-        self.skipped_invalid_names = []  # Track invalid column names skipped
     
     def log(self, message: str, level: str = "INFO"):
         """Ajoute un message au log de migration."""
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         log_entry = f"[{timestamp}] {level}: {message}"
         self.migration_log.append(log_entry)
-        # Ensure we print without non-ASCII characters that might cause issues
-        try:
-            print(log_entry)
-        except UnicodeEncodeError:
-            # Fallback to ASCII-safe printing
-            print(log_entry.encode('ascii', errors='replace').decode('ascii'))
-    
-    def is_valid_sql_identifier(self, identifier: str) -> bool:
-        """Validate if an identifier is a valid SQL identifier."""
-        if not identifier:
-            return False
-        return SQL_IDENTIFIER_PATTERN.match(identifier) is not None
+        print(log_entry)
     
     def load_schema_hints(self, yaml_path: Optional[str] = None) -> bool:
         """Charge le fichier schema_hints.yaml ou le génère s'il n'existe pas."""
@@ -398,26 +373,11 @@ class DatabaseMigrator:
                 return False
         
         try:
-            # Use compat_yaml loader if available
-            if load_hints:
-                self.schema_hints = load_hints(str(yaml_path))
-                if self.schema_hints:
-                    self.log(f"Loaded schema hints from {yaml_path} (using compat_yaml)")
-                    return True
-                else:
-                    self.log(f"Failed to load schema hints using compat_yaml", "WARNING")
-                    return False
-            else:
-                # Fallback to direct YAML loading (requires PyYAML)
-                try:
-                    import yaml
-                    with open(yaml_path, 'r', encoding='utf-8') as f:
-                        self.schema_hints = yaml.safe_load(f)
-                    self.log(f"Loaded schema hints from {yaml_path} (using PyYAML)")
-                    return True
-                except ImportError:
-                    self.log("Neither compat_yaml nor PyYAML available for loading hints", "ERROR")
-                    return False
+            with open(yaml_path, 'r', encoding='utf-8') as f:
+                self.schema_hints = yaml.safe_load(f)
+            
+            self.log(f"Loaded schema hints from {yaml_path}")
+            return True
         except Exception as e:
             self.log(f"Error loading schema hints: {e}", "WARNING")
             return False
@@ -614,12 +574,6 @@ class DatabaseMigrator:
             table_missing = []
             
             for col_name, (col_type, default_value) in expected_columns.items():
-                # Validate column name before processing
-                if not self.is_valid_sql_identifier(col_name):
-                    self.log(f"SKIPPING invalid column name '{col_name}' in table '{table}' (does not match SQL identifier pattern)", "WARNING")
-                    self.skipped_invalid_names.append(f"{table}.{col_name}")
-                    continue
-                
                 if col_name not in existing_cols:
                     # Try fuzzy matching to find a similar column
                     fuzzy_match = self.fuzzy_match_column(col_name, existing_cols, threshold=0.75)
@@ -791,17 +745,6 @@ class DatabaseMigrator:
             if self.backup_path:
                 f.write(f"**Backup:** {self.backup_path}\n")
             
-            # Environment information
-            f.write("\n## Environment\n\n")
-            f.write(f"- Python version: {sys.version.split()[0]}\n")
-            f.write(f"- Platform: {sys.platform}\n")
-            f.write(f"- Script: {__file__}\n")
-            try:
-                import sqlite3
-                f.write(f"- SQLite version: {sqlite3.sqlite_version}\n")
-            except:
-                pass
-            
             f.write("\n## Summary\n\n")
             
             if not missing_columns:
@@ -841,15 +784,6 @@ class DatabaseMigrator:
                     for old_ref, new_ref in self.column_mappings.items():
                         f.write(f"- `{old_ref}` → `{new_ref}`\n")
                     f.write("\n")
-            
-            # Add skipped invalid names section
-            if self.skipped_invalid_names:
-                f.write("\n## Skipped Invalid Identifiers\n\n")
-                f.write("The following column names were skipped because they do not match\n")
-                f.write("the valid SQL identifier pattern (^[A-Za-z_][A-Za-z0-9_]*$):\n\n")
-                for skipped in self.skipped_invalid_names:
-                    f.write(f"- `{skipped}`\n")
-                f.write("\n")
             
             if self.errors:
                 f.write("\n## Errors\n\n")
