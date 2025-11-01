@@ -59,9 +59,12 @@ def row_get_safe(row, key, default=None):
     needing to convert the entire row to a dict. Useful when only accessing one
     or two optional fields.
     
+    Note: sqlite3.Row raises IndexError (not KeyError) when accessing missing
+    columns, whether using string keys or integer indices.
+    
     Args:
         row: sqlite3.Row object
-        key: column name to access
+        key: column name (string) or index (integer) to access
         default: value to return if column doesn't exist
         
     Returns:
@@ -70,8 +73,9 @@ def row_get_safe(row, key, default=None):
     Example:
         >>> row = cursor.execute("SELECT * FROM table").fetchone()
         >>> name = row_get_safe(row, 'name', 'Unknown')
+        >>> first_col = row_get_safe(row, 0, None)
     """
     try:
         return row[key]
-    except (KeyError, IndexError):
+    except IndexError:
         return default
