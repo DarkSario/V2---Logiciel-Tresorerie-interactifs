@@ -31,6 +31,8 @@ from modules.buvette_inventaire_db import (
 from db.db import get_connection
 from utils.app_logger import get_logger
 from utils.db_helpers import row_to_dict
+from modules.db_row_utils import _row_to_dict, _rows_to_dicts
+from modules.inventory_lines_dialog import load_inventory_lines
 
 logger = get_logger("inventory_lines_dialog")
 
@@ -113,6 +115,8 @@ class InventoryLinesDialog(tk.Toplevel):
         self.evt_cb = ttk.Combobox(row1, textvariable=self.evt_var, width=40, state="readonly")
         try:
             events = list_events()
+            # Convert Row objects to dicts for safe access
+            events = _rows_to_dicts(events)
             self.evt_cb["values"] = [""] + [f"{r['id']} - {r['name']}" for r in events]
         except Exception as e:
             logger.warning(f"Could not load events: {e}")
@@ -306,26 +310,28 @@ class InventoryLinesDialog(tk.Toplevel):
                         self.evt_var.set(val)
                         break
             
-            # Load inventory lines
-            from modules.buvette_inventaire_db import list_lignes_inventaire
-            lines = list_lignes_inventaire(self.inventory_id)
+            # Load inventory lines using robust helper with error reporting
+            lines = load_inventory_lines(self.inventory_id)
             
-            for line in lines:
-                # Convert Row to dict for safe .get() access
-                line_dict = row_to_dict(line)
+            for line_dict in lines:
+                # line_dict is already a dict from load_inventory_lines
+                article_id = line_dict.get("article_id")
+                if not article_id:
+                    logger.warning(f"Skipping line with missing article_id: {line_dict}")
+                    continue
                 
                 # Get article details
-                article = get_article_by_id(line_dict["article_id"])
+                article = get_article_by_id(article_id)
                 if article:
                     # Convert article Row to dict for safe .get() access
-                    article_dict = row_to_dict(article)
+                    article_dict = _row_to_dict(article)
                     
                     article_data = {
-                        "article_id": line_dict["article_id"],
-                        "name": article_dict["name"],
+                        "article_id": article_id,
+                        "name": article_dict.get("name", ""),
                         "categorie": article_dict.get("categorie", ""),
                         "contenance": article_dict.get("contenance", ""),
-                        "quantite": line_dict["quantite"],
+                        "quantite": line_dict.get("quantite", 0),
                         "purchase_price": article_dict.get("purchase_price")
                     }
                     self.inventory_lines.append(article_data)
@@ -538,13 +544,14 @@ class AddArticleLineDialog(tk.Toplevel):
         """Load existing articles into combobox."""
         try:
             articles = get_all_articles()
+            # Convert all Row objects to dicts for safe access
+            articles_dicts = _rows_to_dicts(articles)
+            
             article_list = []
             self.articles_dict = {}
             
-            for art in articles:
-                # Convert Row to dict for safe access later
-                art_dict = row_to_dict(art)
-                display_str = f"{art_dict['name']}"
+            for art_dict in articles_dicts:
+                display_str = f"{art_dict.get('name', '')}"
                 if art_dict.get("contenance"):
                     display_str += f" ({art_dict['contenance']})"
                 article_list.append(display_str)
@@ -626,12 +633,12 @@ class AddArticleLineDialog(tk.Toplevel):
                 existing = get_article_by_name(article_name)
                 if existing:
                     # Convert Row to dict for safe access
-                    existing_dict = row_to_dict(existing)
+                    existing_dict = _row_to_dict(existing)
                     if messagebox.askyesno(
                         "Article existant",
                         f"Un article avec le nom '{article_name}' existe déjà. Voulez-vous l'utiliser?"
                     ):
-                        article_id = existing_dict["id"]
+                        article_id = existing_dict.get("id")
                         article_categorie = existing_dict.get("categorie", "")
                         article_contenance = existing_dict.get("contenance", "")
                     else:
