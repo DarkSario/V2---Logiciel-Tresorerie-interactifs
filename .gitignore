@@ -18,3 +18,4 @@ exports/
 # Database backups and migration reports
 *.db.*.bak
 scripts/migration_report_*.md
+reports/migration_report_*.md

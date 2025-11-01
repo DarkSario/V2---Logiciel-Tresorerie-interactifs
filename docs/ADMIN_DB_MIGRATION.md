@@ -23,7 +23,11 @@ Lorsque des colonnes manquantes sont détectées, l'utilisateur peut déclencher
 - ✅ **Exécute les migrations dans une transaction** (rollback en cas d'erreur)
 - ✅ **Ajoute uniquement les colonnes manquantes** (pas de perte de données)
 - ✅ **Active le mode WAL** pour de meilleures performances
-- ✅ **Génère un rapport détaillé** (`scripts/migration_report_YYYYMMDD_HHMMSS.md`)
+- ✅ **Génère un rapport détaillé** dans `reports/` :
+  - `migration_report_success_YYYYMMDD_HHMMSS.md` en cas de succès
+  - `migration_report_failed_YYYYMMDD_HHMMSS.md` en cas d'échec
+- ✅ **Affiche automatiquement le rapport d'erreur** dans l'interface en cas d'échec
+- ✅ **Restaure automatiquement la sauvegarde** en cas d'échec de migration
 - ✅ **Est idempotent** (peut être exécuté plusieurs fois sans problème)
 
 ## Utilisation
@@ -106,7 +110,8 @@ python scripts/analyze_modules_columns.py
 - Transaction avec rollback automatique en cas d'erreur
 - Restauration automatique de la sauvegarde si échec
 - Activation du mode WAL
-- Génération de rapport détaillé
+- Génération de rapport détaillé dans `reports/`
+- Affichage du chemin du rapport sur stdout pour intégration UI
 
 **Utilisation** :
 ```bash
@@ -114,8 +119,12 @@ python scripts/update_db_structure.py [--db-path path/to/database.db]
 ```
 
 **Code de sortie** :
-- `0` : Succès
-- `1` : Échec
+- `0` : Succès (rapport dans `reports/migration_report_success_*.md`)
+- `1` : Échec (rapport dans `reports/migration_report_failed_*.md`)
+
+**Sortie** :
+- Logs détaillés sur stdout/stderr
+- Dernière ligne contient `REPORT_PATH:/chemin/vers/rapport.md`
 
 ### `ui/startup_schema_check.py`
 
@@ -125,7 +134,9 @@ python scripts/update_db_structure.py [--db-path path/to/database.db]
 - Compare schéma attendu vs réel
 - Affiche une fenêtre modale en cas de différences
 - Exécute `update_db_structure.py` si l'utilisateur accepte
-- Propose d'ouvrir le rapport de migration
+- **Affiche automatiquement le rapport d'erreur** dans une fenêtre dédiée en cas d'échec
+- **Affiche le rapport de succès** sur demande en cas de succès
+- Permet d'ouvrir le fichier de rapport complet
 
 **Intégration dans le code** :
 ```python
@@ -134,6 +145,13 @@ from ui import startup_schema_check
 # Dans MainApp.__init__() ou au démarrage
 startup_schema_check.run_check(root_window, "association.db")
 ```
+
+**Fenêtre de rapport d'erreur** :
+En cas d'échec de migration, une fenêtre `MigrationReportDialog` s'affiche automatiquement avec :
+- ❌ Le contenu complet du rapport d'erreur
+- 📋 Les détails des erreurs rencontrées
+- 💡 Les actions recommandées
+- 🔗 Un bouton pour ouvrir le fichier de rapport complet
 
 ## Schéma de Référence
 
@@ -200,14 +218,116 @@ Ce schéma est la source de vérité pour les migrations. Toute nouvelle colonne
 2. Comparer avec `REFERENCE_SCHEMA` dans `update_db_structure.py`
 3. Mettre à jour le schéma de référence si nécessaire
 
+## Tests Manuels
+
+### Test 1 : Migration réussie avec rapport
+
+**Objectif** : Vérifier que la migration génère un rapport de succès dans `reports/`
+
+**Procédure** :
+1. Créer une base de données test avec des colonnes manquantes :
+   ```bash
+   sqlite3 test.db "CREATE TABLE config (id INTEGER, exercice TEXT);"
+   ```
+2. Exécuter la migration :
+   ```bash
+   python scripts/update_db_structure.py --db-path test.db
+   ```
+3. **Résultat attendu** :
+   - Code de sortie : `0`
+   - Fichier créé : `reports/migration_report_success_YYYYMMDD_HHMMSS.md`
+   - Sortie contient : `REPORT_PATH:reports/migration_report_success_...`
+   - Rapport contient : `**Status:** SUCCESS ✓`
+
+### Test 2 : Migration échouée avec rapport d'erreur
+
+**Objectif** : Vérifier que l'échec de migration génère un rapport d'erreur détaillé
+
+**Procédure** :
+1. Créer une base de données test avec des colonnes manquantes :
+   ```bash
+   sqlite3 test.db "CREATE TABLE config (id INTEGER, exercice TEXT);"
+   ```
+2. Rendre la base en lecture seule :
+   ```bash
+   chmod 444 test.db
+   ```
+3. Exécuter la migration :
+   ```bash
+   python scripts/update_db_structure.py --db-path test.db
+   ```
+4. **Résultat attendu** :
+   - Code de sortie : `1`
+   - Fichier créé : `reports/migration_report_failed_YYYYMMDD_HHMMSS.md`
+   - Sortie contient : `REPORT_PATH:reports/migration_report_failed_...`
+   - Rapport contient :
+     - `**Status:** FAILED ✗`
+     - `## Errors`
+     - `## Recommended Actions`
+     - Mention de la restauration de la sauvegarde
+
+### Test 3 : Affichage automatique du rapport d'erreur dans l'UI
+
+**Objectif** : Vérifier que l'interface affiche automatiquement le rapport en cas d'échec
+
+**Procédure** :
+1. Préparer une base avec colonnes manquantes comme Test 2
+2. Lancer l'application :
+   ```bash
+   python main.py
+   ```
+3. Lorsque la fenêtre de vérification du schéma s'affiche, cliquer sur "Mettre à jour maintenant"
+4. **Résultat attendu** :
+   - Si l'échec se produit : une fenêtre `MigrationReportDialog` s'affiche automatiquement
+   - En-tête rouge avec ❌
+   - Contenu du rapport visible dans la zone de texte
+   - Boutons "Ouvrir le fichier complet" et "Fermer"
+   - Message indiquant que la base a été restaurée
+
+### Test 4 : Affichage du rapport de succès dans l'UI
+
+**Objectif** : Vérifier que l'utilisateur peut consulter le rapport de succès
+
+**Procédure** :
+1. Préparer une base avec colonnes manquantes (sans la rendre lecture seule)
+2. Lancer l'application
+3. Cliquer sur "Mettre à jour maintenant" dans la fenêtre de vérification
+4. Lorsque le message de succès s'affiche, cliquer "Oui" pour consulter le rapport
+5. **Résultat attendu** :
+   - Fenêtre `MigrationReportDialog` s'affiche
+   - En-tête vert avec ✅
+   - Contenu du rapport de succès visible
+   - Liste des colonnes ajoutées avec des ✓
+   - Bouton pour ouvrir le fichier complet
+
+### Test 5 : Idempotence - Exécution multiple
+
+**Objectif** : Vérifier que la migration peut être exécutée plusieurs fois sans erreur
+
+**Procédure** :
+1. Créer une base test avec colonnes manquantes
+2. Exécuter la migration une première fois (doit réussir)
+3. Exécuter la migration une seconde fois sur la même base
+4. **Résultat attendu** :
+   - Les deux exécutions retournent code `0`
+   - Deuxième rapport indique "No missing columns detected"
+   - Aucune erreur levée sur les colonnes déjà existantes
+
 ## Support
 
 Pour toute question ou problème, consulter :
-- Les rapports de migration dans `scripts/migration_report_*.md`
+- Les rapports de migration dans `reports/migration_report_*.md`
 - L'analyse du schéma dans `reports/SQL_SCHEMA_HINTS.md`
 - Les logs de l'application
 
 ## Historique des Versions
+
+### Version 2.0 (2025-01-02)
+- **Rapports d'erreur détaillés** : génération systématique de rapports dans `reports/`
+- **Affichage automatique des erreurs** : fenêtre dédiée pour les rapports d'erreur
+- **Distinction succès/échec** : nommage des rapports selon le statut
+- **Meilleure robustesse** : restauration automatique en cas d'échec
+- **Tests améliorés** : 11 tests incluant les scénarios d'erreur
 
 ### Version 1.0 (2025-01-01)
 - Implémentation initiale de la vérification automatique au démarrage
