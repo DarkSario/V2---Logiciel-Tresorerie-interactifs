@@ -22,9 +22,17 @@ import tkinter as tk
 from tkinter import Toplevel, Label, Button, Text, Scrollbar, messagebox
 from pathlib import Path
 from typing import Dict, List, Tuple, Set, Optional
+from difflib import SequenceMatcher
 
 # Constants
 ERROR_MESSAGE_MAX_LENGTH = 500
+
+# Ensure UTF-8 encoding
+try:
+    sys.stdout.reconfigure(encoding='utf-8')
+    sys.stderr.reconfigure(encoding='utf-8')
+except Exception:
+    pass
 
 
 def get_expected_schema() -> Dict[str, Set[str]]:
@@ -105,45 +113,84 @@ def get_real_schema(db_path: str) -> Dict[str, Set[str]]:
         return {}
 
 
-def detect_missing_columns(expected: Dict[str, Set[str]], real: Dict[str, Set[str]]) -> Dict[str, List[str]]:
+def fuzzy_match_column(target_col: str, existing_cols: Set[str], threshold: float = 0.75) -> Optional[str]:
     """
-    Détecte les colonnes manquantes par rapport au schéma attendu.
+    Trouve une colonne existante qui correspond au nom cible (fuzzy/case-insensitive).
     
     Args:
-        expected: Schéma attendu {table: set(columns)}
-        real: Schéma réel {table: set(columns)}
+        target_col: Nom de colonne recherche
+        existing_cols: Ensemble des colonnes existantes dans la table
+        threshold: Seuil de similarite (0.0 a 1.0)
+    
+    Returns:
+        Nom de la colonne correspondante ou None
+    """
+    target_lower = target_col.lower()
+    
+    # 1. Exact match (case-insensitive)
+    for col in existing_cols:
+        if col.lower() == target_lower:
+            return col
+    
+    # 2. Fuzzy match with SequenceMatcher
+    best_match = None
+    best_score = 0.0
+    
+    for col in existing_cols:
+        ratio = SequenceMatcher(None, target_lower, col.lower()).ratio()
+        if ratio > best_score and ratio >= threshold:
+            best_score = ratio
+            best_match = col
+    
+    return best_match
+
+
+def detect_missing_columns(expected: Dict[str, Set[str]], real: Dict[str, Set[str]]) -> Dict[str, List[Tuple[str, Optional[str]]]]:
+    """
+    Detecte les colonnes manquantes par rapport au schema attendu.
+    
+    Args:
+        expected: Schema attendu {table: set(columns)}
+        real: Schema reel {table: set(columns)}
         
     Returns:
-        Dictionnaire {table: [missing_columns]}
+        Dictionnaire {table: [(missing_col, fuzzy_match)]}
+        where fuzzy_match is the suggested existing column or None
     """
     missing = {}
     
     for table, expected_cols in expected.items():
         if table not in real:
             # La table n'existe pas, ne pas la signaler
-            # (update_db_structure ne crée pas de tables)
+            # (update_db_structure ne cree pas de tables)
             continue
         
         real_cols = real[table]
         missing_cols = expected_cols - real_cols
         
         if missing_cols:
-            missing[table] = sorted(list(missing_cols))
+            # Find fuzzy matches for each missing column
+            missing_with_matches = []
+            for col in sorted(missing_cols):
+                fuzzy_match = fuzzy_match_column(col, real_cols)
+                missing_with_matches.append((col, fuzzy_match))
+            
+            missing[table] = missing_with_matches
     
     return missing
 
 
 class SchemaCheckDialog(Toplevel):
-    """Fenêtre d'alerte pour les colonnes manquantes dans la base de données."""
+    """Fenetre d'alerte pour les colonnes manquantes dans la base de donnees."""
     
-    def __init__(self, parent, missing_columns: Dict[str, List[str]], db_path: str):
+    def __init__(self, parent, missing_columns: Dict[str, List[Tuple[str, Optional[str]]]], db_path: str):
         super().__init__(parent)
         
         self.missing_columns = missing_columns
         self.db_path = db_path
         self.user_choice = None  # 'update' ou 'ignore'
         
-        self.title("Vérification du schéma de base de données")
+        self.title("Verification du schema de base de donnees")
         self.geometry("700x500")
         self.resizable(True, True)
         
@@ -258,13 +305,22 @@ class SchemaCheckDialog(Toplevel):
         """Remplit le widget texte avec les colonnes manquantes."""
         for table in sorted(self.missing_columns.keys()):
             columns = self.missing_columns[table]
-            self.text_widget.insert(tk.END, f"\n📋 Table: {table}\n", "table")
-            for col in columns:
-                self.text_widget.insert(tk.END, f"   • {col}\n", "column")
+            self.text_widget.insert(tk.END, f"\nTable: {table}\n", "table")
+            for col, fuzzy_match in columns:
+                if fuzzy_match:
+                    # Show proposed mapping
+                    self.text_widget.insert(tk.END, f"   + {col}", "column")
+                    self.text_widget.insert(tk.END, f" (mappable depuis: {fuzzy_match})\n", "match")
+                else:
+                    # New column
+                    self.text_widget.insert(tk.END, f"   + {col}", "column")
+                    self.text_widget.insert(tk.END, " (nouvelle colonne)\n", "new")
         
         # Configuration des tags pour le formatage
         self.text_widget.tag_config("table", font=("Courier", 10, "bold"), foreground="#0056b3")
-        self.text_widget.tag_config("column", font=("Courier", 10), foreground="#333333")
+        self.text_widget.tag_config("column", font=("Courier", 10, "bold"), foreground="#333333")
+        self.text_widget.tag_config("match", font=("Courier", 9), foreground="#28a745")
+        self.text_widget.tag_config("new", font=("Courier", 9), foreground="#6c757d")
     
     def _on_update(self):
         """Gestionnaire pour le bouton 'Mettre à jour maintenant'."""

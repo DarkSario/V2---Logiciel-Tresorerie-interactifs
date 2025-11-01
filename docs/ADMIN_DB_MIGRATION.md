@@ -6,31 +6,83 @@ Ce document décrit le système de vérification automatique du schéma de base 
 
 ## Fonctionnalités
 
-### 1. Vérification automatique au démarrage
+### 1. Analyseur SQL Strict
+
+Le système utilise un analyseur strict qui :
+
+- ✅ **Extrait UNIQUEMENT les identifiants SQL valides** via regex `^[A-Za-z_][A-Za-z0-9_]*$`
+- ✅ **Détecte les patterns SQL** : INSERT INTO, UPDATE SET, SELECT FROM
+- ✅ **Ignore les tokens de code** : appels de fonction, texte UI, mots-clés Python
+- ✅ **Génère des fichiers UTF-8** : `reports/SQL_SCHEMA_HINTS.md` et `db/schema_hints.yaml`
+- ✅ **Rapporte les identifiants invalides** : collecte et documente les noms ignorés
+
+### 2. Vérification automatique au démarrage
 
 À chaque démarrage de l'application, le système :
 
-1. **Analyse le code** pour identifier toutes les tables et colonnes utilisées
+1. **Charge les hints du fichier** `db/schema_hints.yaml` (ou génère si absent)
 2. **Compare avec la base réelle** via `PRAGMA table_info`
-3. **Alerte l'utilisateur** si des colonnes manquent
-4. **Propose une mise à jour sûre** ou de continuer sans modification
+3. **Propose des mappings fuzzy** pour les colonnes similaires (matching >= 75%)
+4. **Présente une fenêtre modale** avec les changements proposés
+5. **Requiert approbation utilisateur** avant toute modification
 
-### 2. Mise à jour sûre de la structure
+### 3. Mise à jour sûre avec mapping intelligent
 
 Lorsque des colonnes manquantes sont détectées, l'utilisateur peut déclencher une mise à jour automatique qui :
 
+- ✅ **Valide tous les identifiants** avec le pattern SQL strict
+- ✅ **Ignore les noms invalides** et les documente dans le rapport
+- ✅ **Matching fuzzy intelligent** : détecte les colonnes existantes similaires
+- ✅ **Renommage sûr** : tente ALTER TABLE RENAME si supporté (SQLite 3.25+)
+- ✅ **Fallback intelligent** : ADD + COPY si RENAME échoue
 - ✅ **Crée une sauvegarde timestampée** (`association.db.YYYYMMDD_HHMMSS.bak`)
 - ✅ **Exécute les migrations dans une transaction** (rollback en cas d'erreur)
 - ✅ **Ajoute uniquement les colonnes manquantes** (pas de perte de données)
 - ✅ **Active le mode WAL** pour de meilleures performances
+- ✅ **Protection UTF-8 complète** : force l'encodage pour éviter les erreurs
 - ✅ **Génère un rapport détaillé** dans `reports/` :
   - `migration_report_success_YYYYMMDD_HHMMSS.md` en cas de succès
   - `migration_report_failed_YYYYMMDD_HHMMSS.md` en cas d'échec
+  - Inclut : environnement, opérations tentées, identifiants ignorés, traceback
 - ✅ **Affiche automatiquement le rapport d'erreur** dans l'interface en cas d'échec
 - ✅ **Restaure automatiquement la sauvegarde** en cas d'échec de migration
 - ✅ **Est idempotent** (peut être exécuté plusieurs fois sans problème)
 
 ## Utilisation
+
+### Workflow complet de migration
+
+1. **Générer les hints** :
+   ```bash
+   python scripts/analyze_modules_columns.py
+   ```
+   Génère `reports/SQL_SCHEMA_HINTS.md` (lisible) et `db/schema_hints.yaml` (machine-readable).
+
+2. **Réviser les hints** :
+   Ouvrir `db/schema_hints.yaml` et vérifier que les colonnes détectées sont correctes.
+   Supprimer manuellement les colonnes invalides si nécessaire.
+   Ajouter des overrides manuels dans la section `manual_overrides` si besoin :
+   ```yaml
+   manual_overrides:
+     table_name:
+       column_aliases:
+         old_name: new_name
+       forced_types:
+         column_name: REAL
+   ```
+
+3. **Tester sur une copie** :
+   ```bash
+   cp association.db association.db.test.bak
+   python -u scripts/update_db_structure.py > reports/update_run.log 2>&1
+   ```
+
+4. **Inspecter les rapports** :
+   - Vérifier `reports/migration_report_*.md`
+   - Consulter la section "Skipped Invalid Identifiers"
+   - Vérifier les "Column Mappings" pour les renommages/copies
+
+5. **Appliquer en production** si les tests sont OK
 
 ### Vérification manuelle du schéma
 
@@ -40,7 +92,9 @@ Pour analyser le code et générer un rapport des tables/colonnes utilisées :
 python scripts/analyze_modules_columns.py
 ```
 
-Cela génère un rapport dans `reports/SQL_SCHEMA_HINTS.md`.
+Cela génère :
+- `reports/SQL_SCHEMA_HINTS.md` - rapport lisible
+- `db/schema_hints.yaml` - fichier de configuration pour les migrations
 
 ### Migration manuelle
 
@@ -108,20 +162,49 @@ copy association.db.20250101_143000.bak association.db
 
 ### `scripts/analyze_modules_columns.py`
 
-**Rôle** : Parcourt le code source (modules/, ui/, scripts/, lib/, db/) et extrait toutes les références aux tables et colonnes SQL via analyse regex.
+**Rôle** : Analyseur SQL strict qui parcourt le code source et extrait UNIQUEMENT les identifiants SQL valides.
 
-**Sortie** : `reports/SQL_SCHEMA_HINTS.md` - rapport détaillé des tables et colonnes détectées.
+**Caractéristiques** :
+- Utilise le pattern regex `^[A-Za-z_][A-Za-z0-9_]*$` pour valider les identifiants
+- Extrait depuis INSERT INTO, UPDATE SET, SELECT FROM, CREATE TABLE
+- Ignore les tokens de code, appels de fonction, texte UI
+- Collecte les identifiants invalides dans une section dédiée du rapport
+
+**Sortie** :
+- `reports/SQL_SCHEMA_HINTS.md` - rapport lisible avec colonnes détectées et identifiants ignorés
+- `db/schema_hints.yaml` - manifest YAML avec types inférés et section pour overrides manuels
 
 **Utilisation** :
 ```bash
 python scripts/analyze_modules_columns.py
 ```
 
+### `scripts/compat_yaml.py`
+
+**Rôle** : Loader de compatibilité pour `db/schema_hints.yaml`.
+
+**Caractéristiques** :
+- Tente d'utiliser PyYAML si disponible
+- Sinon, utilise un parser simple pour le format produit par l'analyzeur
+- Pas de dépendances externes requises (PyYAML optionnel)
+- Expose `load_hints(path) -> dict`
+
+**Utilisation** :
+```python
+from scripts.compat_yaml import load_hints
+hints = load_hints('db/schema_hints.yaml')
+```
+
 ### `scripts/update_db_structure.py`
 
-**Rôle** : Script de migration sûre qui compare le schéma de référence (hardcodé dans le script) avec la base réelle et ajoute les colonnes manquantes.
+**Rôle** : Script de migration sûre avec mapping fuzzy et validation stricte.
 
 **Fonctionnalités** :
+- Charge `db/schema_hints.yaml` via compat_yaml (ou génère si absent)
+- Valide tous les noms de colonnes avec pattern SQL strict
+- Ignore et rapporte les identifiants invalides
+- Matching fuzzy (seuil >= 75%) pour détecter colonnes similaires
+- Tente ALTER TABLE RENAME si supporté, sinon ADD + COPY
 - Sauvegarde automatique avant modification
 - Transaction avec rollback automatique en cas d'erreur
 - Restauration automatique de la sauvegarde si échec
