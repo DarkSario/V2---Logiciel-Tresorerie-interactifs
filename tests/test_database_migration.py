@@ -356,17 +356,21 @@ def test_failed_migration_report():
     with tempfile.NamedTemporaryFile(suffix=".db", delete=False) as tmp:
         db_path = tmp.name
     
+    # Constants for file permissions
+    READ_ONLY_PERMISSIONS = 0o444
+    READ_WRITE_PERMISSIONS = 0o644
+    
     try:
         create_test_database(db_path, missing_columns=True)
         
         # Make the database read-only to force a migration failure
-        os.chmod(db_path, 0o444)
+        os.chmod(db_path, READ_ONLY_PERMISSIONS)
         
         migrator = DatabaseMigrator(db_path)
         success = migrator.run_migration()
         
         # Restore write permissions for cleanup
-        os.chmod(db_path, 0o644)
+        os.chmod(db_path, READ_WRITE_PERMISSIONS)
         
         # Migration should fail
         assert success is False
@@ -393,7 +397,7 @@ def test_failed_migration_report():
     finally:
         if os.path.exists(db_path):
             try:
-                os.chmod(db_path, 0o644)
+                os.chmod(db_path, READ_WRITE_PERMISSIONS)
                 os.unlink(db_path)
             except Exception:
                 pass
