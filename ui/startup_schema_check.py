@@ -287,6 +287,22 @@ class SchemaCheckDialog(Toplevel):
             self.destroy()
 
 
+def _extract_report_path_from_output(output: str) -> str:
+    """
+    Extrait le chemin du rapport depuis la sortie du script de migration.
+    
+    Args:
+        output: Sortie stdout du script
+        
+    Returns:
+        Chemin du rapport ou None
+    """
+    for line in output.split('\n'):
+        if line.startswith('REPORT_PATH:'):
+            return line.split('REPORT_PATH:', 1)[1].strip()
+    return None
+
+
 def execute_update(db_path: str, parent_window=None) -> Tuple[bool, str]:
     """
     Exécute le script update_db_structure.py pour mettre à jour la base de données.
@@ -318,30 +334,41 @@ def execute_update(db_path: str, parent_window=None) -> Tuple[bool, str]:
             timeout=120  # Timeout de 2 minutes pour la migration
         )
         
+        # Extraire le chemin du rapport depuis la sortie
+        report_path = _extract_report_path_from_output(result.stdout)
+        
         if result.returncode == 0:
             success_msg = (
                 "✅ Mise à jour de la base de données terminée avec succès !\n\n"
-                "Un rapport détaillé a été généré dans le répertoire scripts/.\n"
+                "Un rapport détaillé a été généré dans le répertoire reports/.\n"
                 "Une sauvegarde de votre base a été créée automatiquement."
             )
             
             if parent_window:
-                # Proposer d'ouvrir le rapport
-                show_report = messagebox.askyesno(
-                    "Succès",
-                    success_msg + "\n\nVoulez-vous ouvrir le rapport de migration ?",
-                    parent=parent_window
-                )
-                
-                if show_report:
-                    _open_latest_migration_report()
+                # Afficher le rapport dans une fenêtre dédiée
+                if report_path and os.path.exists(report_path):
+                    show_report = messagebox.askyesno(
+                        "Succès",
+                        success_msg + "\n\nVoulez-vous consulter le rapport de migration ?",
+                        parent=parent_window
+                    )
+                    
+                    if show_report:
+                        MigrationReportDialog(parent_window, report_path, is_error=False)
+                else:
+                    messagebox.showinfo("Succès", success_msg, parent=parent_window)
             
             return True, success_msg
         else:
             error_msg = f"❌ La mise à jour a échoué.\n\nDétails :\n{result.stderr[:ERROR_MESSAGE_MAX_LENGTH]}"
             
             if parent_window:
-                messagebox.showerror("Erreur", error_msg, parent=parent_window)
+                # Afficher automatiquement le rapport d'erreur dans une fenêtre dédiée
+                if report_path and os.path.exists(report_path):
+                    MigrationReportDialog(parent_window, report_path, is_error=True)
+                else:
+                    # Si pas de rapport disponible, afficher l'erreur basique
+                    messagebox.showerror("Erreur de migration", error_msg, parent=parent_window)
             
             return False, error_msg
             
@@ -359,19 +386,157 @@ def execute_update(db_path: str, parent_window=None) -> Tuple[bool, str]:
         return False, error_msg
 
 
+class MigrationReportDialog(Toplevel):
+    """Fenêtre pour afficher le contenu d'un rapport de migration."""
+    
+    def __init__(self, parent, report_path: str, is_error: bool = False):
+        super().__init__(parent)
+        
+        self.report_path = report_path
+        
+        title = "Rapport d'erreur de migration" if is_error else "Rapport de migration"
+        self.title(title)
+        self.geometry("800x600")
+        self.resizable(True, True)
+        
+        # Rendre la fenêtre modale
+        if parent:
+            self.transient(parent)
+            self.grab_set()
+        
+        self._create_widgets(is_error)
+        self._load_report_content()
+        
+        # Centrer la fenêtre
+        self.update_idletasks()
+        x = (self.winfo_screenwidth() // 2) - (self.winfo_width() // 2)
+        y = (self.winfo_screenheight() // 2) - (self.winfo_height() // 2)
+        self.geometry(f"+{x}+{y}")
+    
+    def _create_widgets(self, is_error: bool):
+        """Crée les widgets de la fenêtre."""
+        
+        # En-tête
+        header_color = "#f8d7da" if is_error else "#d4edda"
+        text_color = "#721c24" if is_error else "#155724"
+        icon = "❌" if is_error else "✅"
+        
+        header_frame = tk.Frame(self, bg=header_color, padx=10, pady=10)
+        header_frame.pack(fill=tk.X, padx=10, pady=10)
+        
+        title_text = f"{icon} Rapport de migration de la base de données"
+        header_label = Label(
+            header_frame,
+            text=title_text,
+            font=("Arial", 12, "bold"),
+            bg=header_color,
+            fg=text_color
+        )
+        header_label.pack()
+        
+        # Message
+        if is_error:
+            info_text = (
+                "La migration de la base de données a échoué.\n"
+                "Veuillez consulter les détails ci-dessous pour comprendre la cause du problème.\n"
+                "La base de données a été restaurée à son état précédent."
+            )
+        else:
+            info_text = (
+                "La migration de la base de données s'est terminée avec succès.\n"
+                "Vous pouvez consulter les détails ci-dessous."
+            )
+        
+        info_label = Label(self, text=info_text, justify="left", wraplength=750)
+        info_label.pack(padx=10, pady=(0, 10), anchor="w")
+        
+        # Zone de texte avec scrollbar pour afficher le rapport
+        text_frame = tk.Frame(self)
+        text_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=5)
+        
+        scrollbar = tk.Scrollbar(text_frame)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        
+        self.text_widget = tk.Text(
+            text_frame,
+            wrap=tk.WORD,
+            yscrollcommand=scrollbar.set,
+            font=("Courier", 9),
+            state=tk.DISABLED
+        )
+        self.text_widget.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        scrollbar.config(command=self.text_widget.yview)
+        
+        # Cadre pour les boutons
+        button_frame = tk.Frame(self)
+        button_frame.pack(pady=15)
+        
+        # Bouton "Ouvrir le fichier"
+        open_button = Button(
+            button_frame,
+            text="Ouvrir le fichier complet",
+            command=self._open_file,
+            font=("Arial", 10),
+            width=20
+        )
+        open_button.pack(side=tk.LEFT, padx=5)
+        
+        # Bouton "Fermer"
+        close_button = Button(
+            button_frame,
+            text="Fermer",
+            command=self.destroy,
+            font=("Arial", 10),
+            width=15
+        )
+        close_button.pack(side=tk.LEFT, padx=5)
+    
+    def _load_report_content(self):
+        """Charge et affiche le contenu du rapport."""
+        try:
+            with open(self.report_path, 'r', encoding='utf-8') as f:
+                content = f.read()
+            
+            self.text_widget.config(state=tk.NORMAL)
+            self.text_widget.delete(1.0, tk.END)
+            self.text_widget.insert(1.0, content)
+            self.text_widget.config(state=tk.DISABLED)
+        except Exception as e:
+            self.text_widget.config(state=tk.NORMAL)
+            self.text_widget.delete(1.0, tk.END)
+            self.text_widget.insert(1.0, f"Erreur lors de la lecture du rapport :\n{e}")
+            self.text_widget.config(state=tk.DISABLED)
+    
+    def _open_file(self):
+        """Ouvre le fichier de rapport avec l'application par défaut."""
+        try:
+            if sys.platform == "win32":
+                os.startfile(self.report_path)
+            elif sys.platform == "darwin":
+                subprocess.run(["open", self.report_path], check=False, timeout=5)
+            else:
+                subprocess.run(["xdg-open", self.report_path], check=False, timeout=5)
+        except Exception as e:
+            messagebox.showerror(
+                "Erreur",
+                f"Impossible d'ouvrir le fichier :\n{e}\n\nChemin : {self.report_path}",
+                parent=self
+            )
+
+
 def _open_latest_migration_report():
     """Ouvre le dernier rapport de migration généré."""
     try:
-        scripts_dir = Path(__file__).parent.parent / "scripts"
+        reports_dir = Path(__file__).parent.parent / "reports"
         
         # Trouver le dernier rapport de migration
-        reports = list(scripts_dir.glob("migration_report_*.md"))
+        reports = list(reports_dir.glob("migration_report_*.md"))
         
         if reports:
             latest_report = max(reports, key=os.path.getmtime)
             
-            # Valider que le fichier existe et est bien dans le répertoire scripts
-            if not latest_report.exists() or not latest_report.is_relative_to(scripts_dir):
+            # Valider que le fichier existe et est bien dans le répertoire reports
+            if not latest_report.exists() or not latest_report.is_relative_to(reports_dir):
                 print(f"Invalid report path: {latest_report}")
                 return
             

@@ -306,6 +306,7 @@ class DatabaseMigrator:
         self.backup_path = None
         self.migration_log = []
         self.errors = []
+        self.report_path = None
     
     def log(self, message: str, level: str = "INFO"):
         """Ajoute un message au log de migration."""
@@ -475,11 +476,15 @@ class DatabaseMigrator:
         """Génère un rapport détaillé de la migration."""
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         
+        # Créer le répertoire reports s'il n'existe pas
+        output_path = Path(output_file)
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        
         with open(output_file, 'w', encoding='utf-8') as f:
             f.write("# Database Migration Report\n\n")
             f.write(f"**Date:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
             f.write(f"**Database:** {self.db_path}\n")
-            f.write(f"**Status:** {'SUCCESS' if success else 'FAILED'}\n")
+            f.write(f"**Status:** {'SUCCESS ✓' if success else 'FAILED ✗'}\n")
             
             if self.backup_path:
                 f.write(f"**Backup:** {self.backup_path}\n")
@@ -491,26 +496,45 @@ class DatabaseMigrator:
             else:
                 total_columns = sum(len(cols) for cols in missing_columns.values())
                 f.write(f"- Tables requiring updates: {len(missing_columns)}\n")
-                f.write(f"- Total columns added: {total_columns}\n")
+                f.write(f"- Total columns to add: {total_columns}\n")
+                
+                if success:
+                    f.write("\n✓ All columns were successfully added.\n")
+                else:
+                    f.write("\n✗ Migration failed. Changes have been rolled back.\n")
                 
                 f.write("\n## Changes Applied\n\n")
                 for table, columns in missing_columns.items():
                     f.write(f"### Table: `{table}`\n\n")
                     for col_name, col_type, default_value in columns:
                         default_str = f" DEFAULT {default_value}" if default_value else ""
-                        f.write(f"- Added column: `{col_name}` ({col_type}{default_str})\n")
+                        status_icon = "✓" if success else "✗"
+                        f.write(f"- {status_icon} Column: `{col_name}` ({col_type}{default_str})\n")
                     f.write("\n")
             
             if self.errors:
                 f.write("\n## Errors\n\n")
                 for error in self.errors:
-                    f.write(f"- {error}\n")
+                    f.write(f"- ❌ {error}\n")
+                
+                f.write("\n### Recovery Actions\n\n")
+                if self.backup_path and os.path.exists(self.backup_path):
+                    f.write(f"✓ Database was restored from backup: {self.backup_path}\n")
+                else:
+                    f.write("⚠ Warning: No backup was available for restore.\n")
             
             f.write("\n## Migration Log\n\n")
             f.write("```\n")
             for log_entry in self.migration_log:
                 f.write(f"{log_entry}\n")
             f.write("```\n")
+            
+            if not success:
+                f.write("\n## Recommended Actions\n\n")
+                f.write("1. Review the errors listed above\n")
+                f.write("2. Check database file permissions\n")
+                f.write("3. Ensure no other processes are accessing the database\n")
+                f.write("4. If the issue persists, please report it with this file\n")
         
         self.log(f"Report generated: {output_file}")
     
@@ -576,11 +600,13 @@ class DatabaseMigrator:
             self.restore_backup()
             success = False
         
-        # Générer le rapport
-        report_dir = Path(__file__).parent
+        # Générer le rapport dans le répertoire reports/
+        report_dir = Path(__file__).parent.parent / "reports"
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        report_file = report_dir / f"migration_report_{timestamp}.md"
-        self.generate_report(str(report_file), missing_columns, success)
+        status_suffix = "success" if success else "failed"
+        report_file = report_dir / f"migration_report_{status_suffix}_{timestamp}.md"
+        self.report_path = str(report_file)
+        self.generate_report(self.report_path, missing_columns, success)
         
         self.log("=" * 60)
         if success:
@@ -590,6 +616,35 @@ class DatabaseMigrator:
         self.log("=" * 60)
         
         return success
+
+
+def get_latest_migration_report(reports_dir: str = None) -> str:
+    """
+    Récupère le chemin du dernier rapport de migration généré.
+    
+    Args:
+        reports_dir: Répertoire des rapports (défaut: reports/ à la racine du projet)
+        
+    Returns:
+        Chemin du dernier rapport ou None si aucun rapport trouvé
+    """
+    if reports_dir is None:
+        reports_dir = Path(__file__).parent.parent / "reports"
+    else:
+        reports_dir = Path(reports_dir)
+    
+    if not reports_dir.exists():
+        return None
+    
+    # Trouver tous les rapports de migration
+    reports = list(reports_dir.glob("migration_report_*.md"))
+    
+    if not reports:
+        return None
+    
+    # Retourner le plus récent
+    latest_report = max(reports, key=lambda p: p.stat().st_mtime)
+    return str(latest_report)
 
 
 def main():
@@ -605,6 +660,10 @@ def main():
     
     migrator = DatabaseMigrator(args.db_path)
     success = migrator.run_migration()
+    
+    # Afficher le chemin du rapport pour que l'appelant puisse le récupérer
+    if migrator.report_path:
+        print(f"\nREPORT_PATH:{migrator.report_path}")
     
     sys.exit(0 if success else 1)
 
