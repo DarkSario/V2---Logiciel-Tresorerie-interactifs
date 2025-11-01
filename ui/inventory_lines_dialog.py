@@ -33,6 +33,20 @@ from utils.app_logger import get_logger
 
 logger = get_logger("inventory_lines_dialog")
 
+def _row_to_dict(row):
+    """
+    Convert sqlite3.Row to dict for safe .get() access.
+    
+    Args:
+        row: sqlite3.Row object
+        
+    Returns:
+        dict: Dictionary representation of the row
+    """
+    if row is None:
+        return None
+    return {key: row[key] for key in row.keys()}
+
 class InventoryLinesDialog(tk.Toplevel):
     """
     Dialog for creating a detailed inventory with dynamic lines.
@@ -310,16 +324,22 @@ class InventoryLinesDialog(tk.Toplevel):
             lines = list_lignes_inventaire(self.inventory_id)
             
             for line in lines:
+                # Convert Row to dict for safe .get() access
+                line_dict = _row_to_dict(line)
+                
                 # Get article details
-                article = get_article_by_id(line["article_id"])
+                article = get_article_by_id(line_dict["article_id"])
                 if article:
+                    # Convert article Row to dict for safe .get() access
+                    article_dict = _row_to_dict(article)
+                    
                     article_data = {
-                        "article_id": line["article_id"],
-                        "name": article["name"],
-                        "categorie": article.get("categorie", ""),
-                        "contenance": article.get("contenance", ""),
-                        "quantite": line["quantite"],
-                        "purchase_price": article.get("purchase_price")
+                        "article_id": line_dict["article_id"],
+                        "name": article_dict["name"],
+                        "categorie": article_dict.get("categorie", ""),
+                        "contenance": article_dict.get("contenance", ""),
+                        "quantite": line_dict["quantite"],
+                        "purchase_price": article_dict.get("purchase_price")
                     }
                     self.inventory_lines.append(article_data)
             
@@ -535,11 +555,13 @@ class AddArticleLineDialog(tk.Toplevel):
             self.articles_dict = {}
             
             for art in articles:
-                display_str = f"{art['name']}"
-                if art["contenance"]:
-                    display_str += f" ({art['contenance']})"
+                # Convert Row to dict for safe access later
+                art_dict = _row_to_dict(art)
+                display_str = f"{art_dict['name']}"
+                if art_dict.get("contenance"):
+                    display_str += f" ({art_dict['contenance']})"
                 article_list.append(display_str)
-                self.articles_dict[display_str] = art
+                self.articles_dict[display_str] = art_dict
             
             self.article_cb["values"] = article_list
             
@@ -616,13 +638,15 @@ class AddArticleLineDialog(tk.Toplevel):
                 # Check if article already exists
                 existing = get_article_by_name(article_name)
                 if existing:
+                    # Convert Row to dict for safe access
+                    existing_dict = _row_to_dict(existing)
                     if messagebox.askyesno(
                         "Article existant",
                         f"Un article avec le nom '{article_name}' existe déjà. Voulez-vous l'utiliser?"
                     ):
-                        article_id = existing["id"]
-                        article_categorie = existing["categorie"] if existing["categorie"] else ""
-                        article_contenance = existing["contenance"] if existing["contenance"] else ""
+                        article_id = existing_dict["id"]
+                        article_categorie = existing_dict.get("categorie", "")
+                        article_contenance = existing_dict.get("contenance", "")
                     else:
                         return
                 else:

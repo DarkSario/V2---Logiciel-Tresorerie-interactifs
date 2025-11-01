@@ -452,15 +452,84 @@ Pour toute question ou problème, consulter :
 - L'analyse du schéma dans `reports/SQL_SCHEMA_HINTS.md`
 - Les logs de l'application
 
+## Captures d'écran
+
+### Interface de vérification au démarrage
+Lorsque des colonnes manquantes sont détectées au démarrage, une fenêtre modale s'affiche :
+
+![Fenêtre de vérification du schéma](../screenshots/schema_check_dialog.png)
+
+### Fenêtre de rapport de migration
+Après une migration, le rapport détaillé est accessible :
+
+![Rapport de migration](../screenshots/migration_report_dialog.png)
+
+### Interface d'inventaire détaillé
+Le nouveau dialogue d'inventaire détaillé permet de créer/modifier des inventaires :
+
+![Inventaire détaillé](../screenshots/detailed_inventory_dialog.png)
+
+## Gestion de l'Encodage UTF-8
+
+### Problématiques résolues
+
+Les scripts de migration et d'analyse ont été conçus pour gérer correctement l'encodage UTF-8 :
+
+1. **Forçage UTF-8 en Python** :
+   ```python
+   # Force UTF-8 encoding for stdout/stderr
+   try:
+       sys.stdout.reconfigure(encoding='utf-8')
+       sys.stderr.reconfigure(encoding='utf-8')
+   except Exception:
+       pass
+   ```
+
+2. **Ouverture des fichiers** :
+   Tous les fichiers sont ouverts avec `encoding='utf-8'` explicite :
+   ```python
+   with open(output_file, 'w', encoding='utf-8') as f:
+       # ...
+   ```
+
+3. **Connexions SQLite** :
+   Les connexions SQLite utilisent `sqlite3.Row` pour un accès sécurisé aux colonnes.
+
+### Recommandations environnement
+
+Pour éviter les problèmes d'encodage sur Windows ou dans des environnements non-UTF-8 :
+
+**Windows PowerShell** :
+```powershell
+$env:PYTHONIOENCODING = 'utf-8'
+python -u scripts/analyze_modules_columns.py
+python -u scripts/update_db_structure.py
+```
+
+**Linux/Mac (si nécessaire)** :
+```bash
+export PYTHONIOENCODING=utf-8
+python -u scripts/analyze_modules_columns.py
+python -u scripts/update_db_structure.py
+```
+
+**Python 3.11+** : Recommandé pour une meilleure gestion native de l'UTF-8 sur toutes les plateformes.
+
 ## Historique des Versions
+
+### Version 2.2 (2025-11-01) - Smart Migration
+- **Mapping intelligent** : fuzzy matching pour détecter les colonnes similaires (seuil 75%)
+- **Renommage sûr** : ALTER TABLE RENAME COLUMN si SQLite 3.25+, sinon ADD + COPY
+- **UI améliorée** : suppression du bouton "Ajouter" redondant dans inventaires
+- **Row-to-dict conversion** : `_row_to_dict()` dans `inventory_lines_dialog.py` pour safe access
+- **Documentation UTF-8** : instructions complètes pour gérer l'encodage
+- **Fallback YAML** : `compat_yaml.py` fonctionne sans dépendance PyYAML
 
 ### Version 2.1 (2025-11-01)
 - **Buvette safe access** : ajout du helper `_row_get_safe()` pour tolérer les colonnes manquantes
 - **Inventaire edit mode** : bouton "Modifier" ouvre désormais le dialogue détaillé avec données pré-chargées
 - **Support UPDATE inventaires** : `InventoryLinesDialog` supporte maintenant les modes INSERT et UPDATE
 - **Gestion des lignes** : suppression des anciennes lignes et ré-insertion des nouvelles lors de la modification
-
-## Historique des Versions
 
 ### Version 2.0 (2025-01-02)
 - **Rapports d'erreur détaillés** : génération systématique de rapports dans `reports/`
