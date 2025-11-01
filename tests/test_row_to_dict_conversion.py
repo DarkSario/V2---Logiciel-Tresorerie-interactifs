@@ -2,25 +2,14 @@
 Test that sqlite3.Row to dict conversion works correctly.
 
 This test validates that the fix for the 'sqlite3.Row' object has no attribute 'get'
-error is working correctly by testing the conversion pattern.
+error is working correctly by testing the conversion utilities.
 """
 
 import unittest
 import sqlite3
 import tempfile
 import os
-
-
-def _row_to_dict(row):
-    """Convert sqlite3.Row to dict for safe .get() access."""
-    if row is None:
-        return None
-    return dict(row)
-
-
-def _rows_to_dicts(rows):
-    """Convert list of sqlite3.Row objects to list of dicts."""
-    return [dict(row) for row in rows]
+from utils.db_helpers import row_to_dict, rows_to_dicts, row_get_safe
 
 
 class TestRowToDictConversion(unittest.TestCase):
@@ -60,14 +49,14 @@ class TestRowToDictConversion(unittest.TestCase):
         os.remove(self.db_path)
     
     def test_row_to_dict_basic(self):
-        """Test that _row_to_dict converts sqlite3.Row to dict."""
+        """Test that row_to_dict converts sqlite3.Row to dict."""
         row = self.conn.execute("SELECT * FROM test_table WHERE id=1").fetchone()
         
         # Verify it's a Row object
         self.assertIsInstance(row, sqlite3.Row)
         
         # Convert to dict
-        row_dict = _row_to_dict(row)
+        row_dict = row_to_dict(row)
         
         # Verify conversion
         self.assertIsInstance(row_dict, dict)
@@ -79,7 +68,7 @@ class TestRowToDictConversion(unittest.TestCase):
     def test_row_to_dict_with_get_method(self):
         """Test that converted dict supports .get() method with default values."""
         row = self.conn.execute("SELECT * FROM test_table WHERE id=2").fetchone()
-        row_dict = _row_to_dict(row)
+        row_dict = row_to_dict(row)
         
         # Test .get() with existing key
         self.assertEqual(row_dict.get('name'), 'test2')
@@ -92,19 +81,19 @@ class TestRowToDictConversion(unittest.TestCase):
         self.assertEqual(row_dict.get('optional_field', 'default'), None)
     
     def test_row_to_dict_with_none_input(self):
-        """Test that _row_to_dict handles None input gracefully."""
-        result = _row_to_dict(None)
+        """Test that row_to_dict handles None input gracefully."""
+        result = row_to_dict(None)
         self.assertIsNone(result)
     
     def test_rows_to_dicts_batch_conversion(self):
-        """Test that _rows_to_dicts converts multiple rows."""
+        """Test that rows_to_dicts converts multiple rows."""
         rows = self.conn.execute("SELECT * FROM test_table").fetchall()
         
         # Verify they're Row objects
         self.assertTrue(all(isinstance(r, sqlite3.Row) for r in rows))
         
         # Convert to dicts
-        dicts = _rows_to_dicts(rows)
+        dicts = rows_to_dicts(rows)
         
         # Verify conversion
         self.assertEqual(len(dicts), 2)
@@ -117,15 +106,29 @@ class TestRowToDictConversion(unittest.TestCase):
         row = self.conn.execute("SELECT * FROM test_table WHERE id=1").fetchone()
         
         # Test the pattern used in the fix
-        row_dict = _row_to_dict(row)
+        row_dict = row_to_dict(row)
         
         self.assertIsInstance(row_dict, dict)
         self.assertEqual(row_dict['id'], 1)
         self.assertEqual(row_dict.get('name'), 'test1')
         
         # Test that the same pattern works for None
-        none_dict = _row_to_dict(None)
+        none_dict = row_to_dict(None)
         self.assertIsNone(none_dict)
+    
+    def test_row_get_safe_helper(self):
+        """Test that row_get_safe provides .get()-like interface on Row objects."""
+        row = self.conn.execute("SELECT * FROM test_table WHERE id=1").fetchone()
+        
+        # Test with existing column
+        self.assertEqual(row_get_safe(row, 'name'), 'test1')
+        
+        # Test with missing column and default
+        self.assertEqual(row_get_safe(row, 'nonexistent', 'default'), 'default')
+        
+        # Test with None value
+        self.assertIsNone(row_get_safe(row, 'nullable_field'))
+        self.assertIsNone(row_get_safe(row, 'nullable_field', 'default'))
     
     def test_sqlite_row_does_not_have_get_method(self):
         """Verify that sqlite3.Row indeed lacks the .get() method."""

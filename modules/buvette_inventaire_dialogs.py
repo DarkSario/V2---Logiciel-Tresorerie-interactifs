@@ -4,34 +4,9 @@ from datetime import date
 import modules.buvette_inventaire_db as db
 import modules.buvette_db as buvette_db
 from utils.app_logger import get_logger
+from utils.db_helpers import row_to_dict, rows_to_dicts
 
 logger = get_logger("buvette_inventaire_dialogs")
-
-def _row_to_dict(row):
-    """
-    Convert sqlite3.Row to dict for safe .get() access.
-    
-    Args:
-        row: sqlite3.Row object or None
-        
-    Returns:
-        dict or None: Dictionary representation of the row, or None if input is None
-    """
-    if row is None:
-        return None
-    return dict(row)
-
-def _rows_to_dicts(rows):
-    """
-    Convert list of sqlite3.Row objects to list of dicts.
-    
-    Args:
-        rows: list of sqlite3.Row objects
-        
-    Returns:
-        list of dicts
-    """
-    return [dict(row) for row in rows]
 
 class InventaireDialog(tk.Toplevel):
     """Dialog for creating/editing buvette inventory with dynamic article lines."""
@@ -195,7 +170,7 @@ class InventaireDialog(tk.Toplevel):
                 return
             
             # Convert Row to dict for safe .get() access
-            inv = _row_to_dict(inv)
+            inv = row_to_dict(inv)
             
             # Load header data
             self.date_var.set(inv["date_inventaire"] or "")
@@ -216,7 +191,7 @@ class InventaireDialog(tk.Toplevel):
                         article = buvette_db.get_article_by_id(article_id)
                         if article:
                             # Convert Row to dict for safe .get() access
-                            article = _row_to_dict(article)
+                            article = row_to_dict(article)
                             self.lines_tree.insert("", "end", values=(
                                 article_id,
                                 article["name"],
@@ -372,7 +347,7 @@ class AddLineDialog(tk.Toplevel):
         try:
             articles = buvette_db.list_articles()
             # Convert Rows to dicts for safe .get() access
-            articles = _rows_to_dicts(articles)
+            articles = rows_to_dicts(articles)
             self.article_combo["values"] = [
                 f"{a['id']} - {a['name']} ({a.get('contenance', '')})" for a in articles
             ]
@@ -479,7 +454,7 @@ class AddLineDialog(tk.Toplevel):
                     return
                 
                 # Convert Row to dict for safe .get() access
-                article = _row_to_dict(article)
+                article = row_to_dict(article)
                 name = article["name"]
                 categorie = article.get("categorie", "")
                 contenance = article.get("contenance", "")

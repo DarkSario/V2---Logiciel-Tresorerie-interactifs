@@ -30,22 +30,9 @@ from modules.buvette_inventaire_db import (
 )
 from db.db import get_connection
 from utils.app_logger import get_logger
+from utils.db_helpers import row_to_dict
 
 logger = get_logger("inventory_lines_dialog")
-
-def _row_to_dict(row):
-    """
-    Convert sqlite3.Row to dict for safe .get() access.
-    
-    Args:
-        row: sqlite3.Row object or None
-        
-    Returns:
-        dict or None: Dictionary representation of the row, or None if input is None
-    """
-    if row is None:
-        return None
-    return dict(row)
 
 class InventoryLinesDialog(tk.Toplevel):
     """
@@ -325,13 +312,13 @@ class InventoryLinesDialog(tk.Toplevel):
             
             for line in lines:
                 # Convert Row to dict for safe .get() access
-                line_dict = _row_to_dict(line)
+                line_dict = row_to_dict(line)
                 
                 # Get article details
                 article = get_article_by_id(line_dict["article_id"])
                 if article:
                     # Convert article Row to dict for safe .get() access
-                    article_dict = _row_to_dict(article)
+                    article_dict = row_to_dict(article)
                     
                     article_data = {
                         "article_id": line_dict["article_id"],
@@ -556,7 +543,7 @@ class AddArticleLineDialog(tk.Toplevel):
             
             for art in articles:
                 # Convert Row to dict for safe access later
-                art_dict = _row_to_dict(art)
+                art_dict = row_to_dict(art)
                 display_str = f"{art_dict['name']}"
                 if art_dict.get("contenance"):
                     display_str += f" ({art_dict['contenance']})"
@@ -639,7 +626,7 @@ class AddArticleLineDialog(tk.Toplevel):
                 existing = get_article_by_name(article_name)
                 if existing:
                     # Convert Row to dict for safe access
-                    existing_dict = _row_to_dict(existing)
+                    existing_dict = row_to_dict(existing)
                     if messagebox.askyesno(
                         "Article existant",
                         f"Un article avec le nom '{article_name}' existe déjà. Voulez-vous l'utiliser?"
