@@ -3,44 +3,43 @@
 Ce rapport liste toutes les tables et colonnes référencées dans le code Python.
 Il sert de référence pour les migrations et la maintenance du schéma de base de données.
 
-**Nombre total de tables détectées:** 35
+**Nombre total de tables détectées:** 34
 
 ## Résumé par Table
 
-- **buvette_achats**: 33 colonnes, référencée dans 3 fichier(s)
-- **buvette_articles**: 17 colonnes, référencée dans 6 fichier(s)
-- **buvette_inventaire_lignes**: 9 colonnes, référencée dans 5 fichier(s)
-- **buvette_inventaires**: 11 colonnes, référencée dans 3 fichier(s)
-- **buvette_mouvements**: 10 colonnes, référencée dans 2 fichier(s)
-- **buvette_recettes**: 1 colonnes, référencée dans 2 fichier(s)
-- **categories**: 38 colonnes, référencée dans 2 fichier(s)
+- **buvette_achats**: 22 colonnes, référencée dans 3 fichier(s)
+- **buvette_articles**: 14 colonnes, référencée dans 6 fichier(s)
+- **buvette_inventaire_lignes**: 7 colonnes, référencée dans 5 fichier(s)
+- **buvette_inventaires**: 10 colonnes, référencée dans 3 fichier(s)
+- **buvette_mouvements**: 9 colonnes, référencée dans 2 fichier(s)
+- **buvette_recettes**: 2 colonnes, référencée dans 2 fichier(s)
+- **categories**: 28 colonnes, référencée dans 2 fichier(s)
 - **colonnes_modeles**: 67 colonnes, référencée dans 3 fichier(s)
-- **comptes**: 9 colonnes, référencée dans 1 fichier(s)
+- **comptes**: 8 colonnes, référencée dans 1 fichier(s)
 - **config**: 7 colonnes, référencée dans 3 fichier(s)
-- **depenses_diverses**: 16 colonnes, référencée dans 1 fichier(s)
-- **depenses_regulieres**: 16 colonnes, référencée dans 1 fichier(s)
-- **depots_retraits_banque**: 29 colonnes, référencée dans 1 fichier(s)
-- **dons_subventions**: 9 colonnes, référencée dans 2 fichier(s)
-- **event_caisse_details**: 30 colonnes, référencée dans 1 fichier(s)
-- **event_caisses**: 40 colonnes, référencée dans 3 fichier(s)
-- **event_depenses**: 34 colonnes, référencée dans 3 fichier(s)
-- **event_module_data**: 66 colonnes, référencée dans 3 fichier(s)
-- **event_module_fields**: 29 colonnes, référencée dans 4 fichier(s)
-- **event_modules**: 71 colonnes, référencée dans 4 fichier(s)
-- **event_payments**: 32 colonnes, référencée dans 1 fichier(s)
-- **event_recettes**: 32 colonnes, référencée dans 3 fichier(s)
-- **events**: 68 colonnes, référencée dans 8 fichier(s)
-- **for**: 3 colonnes, référencée dans 0 fichier(s)
-- **fournisseurs**: 8 colonnes, référencée dans 3 fichier(s)
-- **historique_clotures**: 6 colonnes, référencée dans 1 fichier(s)
+- **depenses_diverses**: 15 colonnes, référencée dans 1 fichier(s)
+- **depenses_regulieres**: 15 colonnes, référencée dans 1 fichier(s)
+- **depots_retraits_banque**: 21 colonnes, référencée dans 1 fichier(s)
+- **dons_subventions**: 8 colonnes, référencée dans 2 fichier(s)
+- **event_caisse_details**: 19 colonnes, référencée dans 1 fichier(s)
+- **event_caisses**: 29 colonnes, référencée dans 3 fichier(s)
+- **event_depenses**: 25 colonnes, référencée dans 3 fichier(s)
+- **event_module_data**: 58 colonnes, référencée dans 3 fichier(s)
+- **event_module_fields**: 18 colonnes, référencée dans 4 fichier(s)
+- **event_modules**: 56 colonnes, référencée dans 4 fichier(s)
+- **event_payments**: 23 colonnes, référencée dans 1 fichier(s)
+- **event_recettes**: 22 colonnes, référencée dans 3 fichier(s)
+- **events**: 63 colonnes, référencée dans 8 fichier(s)
+- **fournisseurs**: 7 colonnes, référencée dans 3 fichier(s)
+- **historique_clotures**: 5 colonnes, référencée dans 1 fichier(s)
 - **inventaire_lignes**: 8 colonnes, référencée dans 2 fichier(s)
-- **inventaires**: 3 colonnes, référencée dans 1 fichier(s)
-- **membres**: 40 colonnes, référencée dans 3 fichier(s)
-- **mouvements_stock**: 9 colonnes, référencée dans 1 fichier(s)
-- **retrocessions_ecoles**: 100 colonnes, référencée dans 2 fichier(s)
-- **sqlite_master**: 77 colonnes, référencée dans 4 fichier(s)
-- **stock**: 38 colonnes, référencée dans 5 fichier(s)
-- **tree**: 44 colonnes, référencée dans 0 fichier(s)
+- **inventaires**: 6 colonnes, référencée dans 1 fichier(s)
+- **membres**: 22 colonnes, référencée dans 3 fichier(s)
+- **mouvements_stock**: 16 colonnes, référencée dans 1 fichier(s)
+- **retrocessions_ecoles**: 95 colonnes, référencée dans 2 fichier(s)
+- **sqlite_master**: 86 colonnes, référencée dans 4 fichier(s)
+- **stock**: 30 colonnes, référencée dans 5 fichier(s)
+- **tree**: 32 colonnes, référencée dans 0 fichier(s)
 - **valeurs_modeles_colonnes**: 2 colonnes, référencée dans 3 fichier(s)
 
 ## Détails des Tables et Colonnes
@@ -49,39 +48,28 @@ Il sert de référence pour les migrations et la maintenance du schéma de base 
 
 **Colonnes détectées:**
 
-- `article_id`
-- `bilan_txt`
-- `command`
-- `conn`
-- `date_achat`
-- `event_combo`
-- `event_id`
-- `events`
-- `evt_label`
-- `exercice`
-- `expand`
-- `facture`
-- `fill`
-- `fournisseur`
-- `frm_select`
-- `height`
-- `id`
-- `inv_apres`
-- `inv_avant`
-- `lignes_apres`
-- `lignes_avant`
-- `padx`
-- `pady`
-- `params`
-- `prix_unitaire`
-- `quantite`
-- `recette`
-- `row`
-- `rows`
-- `side`
-- `state`
-- `text`
-- `width`
+- `article_id` (type inféré: INTEGER)
+- `bilan_txt` (type inféré: TEXT)
+- `date_achat` (type inféré: DATE)
+- `event_combo` (type inféré: TEXT)
+- `event_id` (type inféré: INTEGER)
+- `events` (type inféré: TEXT)
+- `evt_label` (type inféré: TEXT)
+- `exercice` (type inféré: TEXT)
+- `facture` (type inféré: TEXT)
+- `fournisseur` (type inféré: TEXT)
+- `frm_select` (type inféré: TEXT)
+- `id` (type inféré: INTEGER)
+- `inv_apres` (type inféré: TEXT)
+- `inv_avant` (type inféré: TEXT)
+- `lignes_apres` (type inféré: TEXT)
+- `lignes_avant` (type inféré: TEXT)
+- `prix_unitaire` (type inféré: REAL)
+- `qte` (type inféré: TEXT)
+- `quantite` (type inféré: INTEGER)
+- `recette` (type inféré: TEXT)
+- `rows` (type inféré: TEXT)
+- `total` (type inféré: REAL)
 
 **Référencée dans les fichiers:**
 
@@ -95,23 +83,20 @@ Il sert de référence pour les migrations et la maintenance du schéma de base 
 
 **Colonnes détectées:**
 
-- `article`
-- `article_id`
-- `categorie`
-- `columns`
-- `commentaire`
-- `conn`
-- `contenance`
-- `cursor`
-- `has_purchase_price`
-- `id`
-- `name`
-- `purchase_price`
-- `quantite`
-- `row`
-- `rows`
-- `stock`
-- `unite`
+- `article` (type inféré: TEXT)
+- `article_id` (type inféré: INTEGER)
+- `categorie` (type inféré: TEXT)
+- `columns` (type inféré: TEXT)
+- `commentaire` (type inféré: TEXT)
+- `contenance` (type inféré: TEXT)
+- `has_purchase_price` (type inféré: TEXT)
+- `id` (type inféré: INTEGER)
+- `name` (type inféré: TEXT)
+- `purchase_price` (type inféré: TEXT)
+- `quantite` (type inféré: INTEGER)
+- `rows` (type inféré: TEXT)
+- `stock` (type inféré: INTEGER)
+- `unite` (type inféré: TEXT)
 
 **Référencée dans les fichiers:**
 
@@ -128,15 +113,13 @@ Il sert de référence pour les migrations et la maintenance du schéma de base 
 
 **Colonnes détectées:**
 
-- `article_id`
-- `commentaire`
-- `conn`
-- `cur`
-- `id`
-- `inventaire_id`
-- `quantite`
-- `row`
-- `rows`
+- `article_id` (type inféré: INTEGER)
+- `commentaire` (type inféré: TEXT)
+- `cur` (type inféré: TEXT)
+- `id` (type inféré: INTEGER)
+- `inventaire_id` (type inféré: INTEGER)
+- `quantite` (type inféré: INTEGER)
+- `rows` (type inféré: TEXT)
 
 **Référencée dans les fichiers:**
 
@@ -152,17 +135,16 @@ Il sert de référence pour les migrations et la maintenance du schéma de base 
 
 **Colonnes détectées:**
 
-- `article_id`
-- `commentaire`
-- `conn`
-- `cur`
-- `date_inventaire`
-- `event_id`
-- `id`
-- `inv_id`
-- `inventaire_id`
-- `rows`
-- `type_inventaire`
+- `article_id` (type inféré: INTEGER)
+- `commentaire` (type inféré: TEXT)
+- `cur` (type inféré: TEXT)
+- `date_inventaire` (type inféré: DATE)
+- `event_id` (type inféré: INTEGER)
+- `id` (type inféré: INTEGER)
+- `inv_id` (type inféré: INTEGER)
+- `inventaire_id` (type inféré: INTEGER)
+- `rows` (type inféré: TEXT)
+- `type_inventaire` (type inféré: TEXT)
 
 **Référencée dans les fichiers:**
 
@@ -176,16 +158,15 @@ Il sert de référence pour les migrations et la maintenance du schéma de base 
 
 **Colonnes détectées:**
 
-- `article_id`
-- `conn`
-- `date_mouvement`
-- `event_id`
-- `id`
-- `inventaire_id`
-- `motif`
-- `quantite`
-- `rows`
-- `type_mouvement`
+- `article_id` (type inféré: INTEGER)
+- `date_mouvement` (type inféré: DATE)
+- `event_id` (type inféré: INTEGER)
+- `id` (type inféré: INTEGER)
+- `inventaire_id` (type inféré: INTEGER)
+- `motif` (type inféré: TEXT)
+- `quantite` (type inféré: INTEGER)
+- `rows` (type inféré: TEXT)
+- `type_mouvement` (type inféré: TEXT)
 
 **Référencée dans les fichiers:**
 
@@ -198,7 +179,8 @@ Il sert de référence pour les migrations et la maintenance du schéma de base 
 
 **Colonnes détectées:**
 
-- `SUM`
+- `SUM` (type inféré: TEXT)
+- `recette` (type inféré: TEXT)
 
 **Référencée dans les fichiers:**
 
@@ -211,44 +193,34 @@ Il sert de référence pour les migrations et la maintenance du schéma de base 
 
 **Colonnes détectées:**
 
-- `c.id`
-- `c.name`
-- `cat_id`
-- `categorie_id`
-- `column`
-- `command`
-- `commentaire`
-- `conn`
-- `cur`
-- `date_peremption`
-- `df_cat`
-- `form`
-- `id`
-- `item`
-- `lot`
-- `name`
-- `nb_children`
-- `nb_stock`
-- `nom_entry`
-- `p.name`
-- `padx`
-- `pady`
-- `parent_cb`
-- `parent_id`
-- `parent_nom`
-- `parent_row`
-- `parent_var`
-- `quantite`
-- `result`
-- `row`
-- `selected`
-- `seuil_alerte`
-- `state`
-- `sticky`
-- `text`
-- `textvariable`
-- `values`
-- `width`
+- `c.id` (type inféré: TEXT)
+- `c.name` (type inféré: TEXT)
+- `cat_id` (type inféré: INTEGER)
+- `categorie_id` (type inféré: INTEGER)
+- `commentaire` (type inféré: TEXT)
+- `cur` (type inféré: TEXT)
+- `date_peremption` (type inféré: DATE)
+- `df_cat` (type inféré: TEXT)
+- `form` (type inféré: TEXT)
+- `id` (type inféré: INTEGER)
+- `item` (type inféré: TEXT)
+- `lot` (type inféré: TEXT)
+- `name` (type inféré: TEXT)
+- `nb_children` (type inféré: TEXT)
+- `nb_stock` (type inféré: INTEGER)
+- `nom_entry` (type inféré: TEXT)
+- `p.name` (type inféré: TEXT)
+- `parent` (type inféré: TEXT)
+- `parent_cb` (type inféré: TEXT)
+- `parent_id` (type inféré: INTEGER)
+- `parent_nom` (type inféré: TEXT)
+- `parent_row` (type inféré: TEXT)
+- `parent_var` (type inféré: TEXT)
+- `quantite` (type inféré: INTEGER)
+- `result` (type inféré: TEXT)
+- `selected` (type inféré: TEXT)
+- `seuil_alerte` (type inféré: INTEGER)
+- `sticky` (type inféré: TEXT)
 
 **Référencée dans les fichiers:**
 
@@ -261,73 +233,73 @@ Il sert de référence pour les migrations et la maintenance du schéma de base 
 
 **Colonnes détectées:**
 
-- `"INTEGER"`
-- `"REAL"]).pack(fill="x"`
-- `"Supprimer`
-- `"bold")).pack(anchor="w"`
-- `"bold")).pack(pady=8)`
-- `(modele_id`
-- `(name`
-- `))`
-- `)).fetchall()`
-- `)).fetchone()["id"]`
-- `10`
-- `200)`
-- `6))`
-- `600)`
-- `?)"`
-- `anchor="w")`
-- `anchor="w").pack(side="left")`
-- `callback=None):`
-- `callback=self.refresh_list)`
-- `command=lambda`
-- `command=self.ajouter).pack(side="left"`
-- `command=self.destroy).pack(side="right"`
-- `command=top.destroy).pack(pady=8)`
-- `expand=True`
-- `font=("Arial"`
-- `height=15`
-- `id`
-- `master`
-- `master):`
-- `modele_id`
-- `modele_id):`
-- `modele_id=None`
-- `modele_id=modele_id`
-- `name`
-- `padx=10`
-- `padx=2)`
-- `padx=4)`
-- `padx=5`
-- `padx=8`
-- `padx=8)`
-- `pady=(0`
-- `pady=10)`
-- `pady=2`
-- `pady=8)`
-- `text="Ajouter`
-- `text="Fermer"`
-- `text="Modifier"`
-- `text="Modèles`
-- `text="Name`
-- `text="Supprimer"`
-- `text="Type`
-- `text="Valeurs`
-- `text="Voir`
-- `text=f"{c['name']}`
-- `textvariable=self.nom_var).pack(fill="x"`
-- `textvariable=self.type_var`
-- `txt)`
-- `typ`
-- `typ))`
-- `type_modele`
-- `type_modele)`
-- `v))`
-- `valeur`
-- `valeur)`
-- `valeurs):`
-- `values=["TEXT"`
-- `width=40)`
+- `"INTEGER"` (type inféré: TEXT)
+- `"REAL"]).pack(fill="x"` (type inféré: TEXT)
+- `"Supprimer` (type inféré: TEXT)
+- `"bold")).pack(anchor="w"` (type inféré: TEXT)
+- `"bold")).pack(pady=8)` (type inféré: TEXT)
+- `(modele_id` (type inféré: INTEGER)
+- `(name` (type inféré: TEXT)
+- `))` (type inféré: TEXT)
+- `)).fetchall()` (type inféré: TEXT)
+- `)).fetchone()["id"]` (type inféré: TEXT)
+- `10` (type inféré: TEXT)
+- `200)` (type inféré: TEXT)
+- `6))` (type inféré: TEXT)
+- `600)` (type inféré: TEXT)
+- `?)"` (type inféré: TEXT)
+- `anchor="w")` (type inféré: TEXT)
+- `anchor="w").pack(side="left")` (type inféré: TEXT)
+- `callback=None):` (type inféré: TEXT)
+- `callback=self.refresh_list)` (type inféré: TEXT)
+- `command=lambda` (type inféré: TEXT)
+- `command=self.ajouter).pack(side="left"` (type inféré: TEXT)
+- `command=self.destroy).pack(side="right"` (type inféré: TEXT)
+- `command=top.destroy).pack(pady=8)` (type inféré: TEXT)
+- `expand=True` (type inféré: TEXT)
+- `font=("Arial"` (type inféré: TEXT)
+- `height=15` (type inféré: TEXT)
+- `id` (type inféré: INTEGER)
+- `master` (type inféré: TEXT)
+- `master):` (type inféré: TEXT)
+- `modele_id` (type inféré: INTEGER)
+- `modele_id):` (type inféré: TEXT)
+- `modele_id=None` (type inféré: TEXT)
+- `modele_id=modele_id` (type inféré: INTEGER)
+- `name` (type inféré: TEXT)
+- `padx=10` (type inféré: TEXT)
+- `padx=2)` (type inféré: TEXT)
+- `padx=4)` (type inféré: TEXT)
+- `padx=5` (type inféré: TEXT)
+- `padx=8` (type inféré: TEXT)
+- `padx=8)` (type inféré: TEXT)
+- `pady=(0` (type inféré: TEXT)
+- `pady=10)` (type inféré: TEXT)
+- `pady=2` (type inféré: TEXT)
+- `pady=8)` (type inféré: TEXT)
+- `text="Ajouter` (type inféré: TEXT)
+- `text="Fermer"` (type inféré: TEXT)
+- `text="Modifier"` (type inféré: TEXT)
+- `text="Modèles` (type inféré: TEXT)
+- `text="Name` (type inféré: TEXT)
+- `text="Supprimer"` (type inféré: TEXT)
+- `text="Type` (type inféré: TEXT)
+- `text="Valeurs` (type inféré: TEXT)
+- `text="Voir` (type inféré: TEXT)
+- `text=f"{c['name']}` (type inféré: TEXT)
+- `textvariable=self.nom_var).pack(fill="x"` (type inféré: TEXT)
+- `textvariable=self.type_var` (type inféré: TEXT)
+- `txt)` (type inféré: TEXT)
+- `typ` (type inféré: TEXT)
+- `typ))` (type inféré: TEXT)
+- `type_modele` (type inféré: TEXT)
+- `type_modele)` (type inféré: TEXT)
+- `v))` (type inféré: TEXT)
+- `valeur` (type inféré: TEXT)
+- `valeur)` (type inféré: TEXT)
+- `valeurs):` (type inféré: TEXT)
+- `values=["TEXT"` (type inféré: TEXT)
+- `width=40)` (type inféré: TEXT)
 
 **Référencée dans les fichiers:**
 
@@ -341,15 +313,14 @@ Il sert de référence pour les migrations et la maintenance du schéma de base 
 
 **Colonnes détectées:**
 
-- `("Banque`
-- `?)"`
-- `column`
-- `definition):`
-- `id`
-- `name`
-- `row["solde_report"]))`
-- `solde`
-- `solde)`
+- `("Banque` (type inféré: TEXT)
+- `?)"` (type inféré: TEXT)
+- `definition):` (type inféré: TEXT)
+- `id` (type inféré: INTEGER)
+- `name` (type inféré: TEXT)
+- `row["solde_report"]))` (type inféré: TEXT)
+- `solde` (type inféré: REAL)
+- `solde)` (type inféré: TEXT)
 
 **Référencée dans les fichiers:**
 
@@ -361,13 +332,13 @@ Il sert de référence pour les migrations et la maintenance du schéma de base 
 
 **Colonnes détectées:**
 
-- `MAX`
-- `date`
-- `date_fin`
-- `disponible_banque`
-- `exercice`
-- `id`
-- `solde_report`
+- `MAX` (type inféré: TEXT)
+- `date` (type inféré: DATE)
+- `date_fin` (type inféré: DATE)
+- `disponible_banque` (type inféré: REAL)
+- `exercice` (type inféré: TEXT)
+- `id` (type inféré: INTEGER)
+- `solde_report` (type inféré: REAL)
 
 **Référencée dans les fichiers:**
 
@@ -381,22 +352,21 @@ Il sert de référence pour les migrations et la maintenance du schéma de base 
 
 **Colonnes détectées:**
 
-- `categorie`
-- `commentaire`
-- `conn`
-- `date_depense`
-- `fournisseur`
-- `id`
-- `items`
-- `membre_id`
-- `module_id`
-- `montant`
-- `moyen_paiement`
-- `numero_cheque`
-- `numero_facture`
-- `paye_par`
-- `statut_reglement`
-- `statut_remboursement`
+- `categorie` (type inféré: TEXT)
+- `commentaire` (type inféré: TEXT)
+- `date_depense` (type inféré: DATE)
+- `fournisseur` (type inféré: TEXT)
+- `id` (type inféré: INTEGER)
+- `items` (type inféré: TEXT)
+- `membre_id` (type inféré: INTEGER)
+- `module_id` (type inféré: INTEGER)
+- `montant` (type inféré: REAL)
+- `moyen_paiement` (type inféré: TEXT)
+- `numero_cheque` (type inféré: TEXT)
+- `numero_facture` (type inféré: TEXT)
+- `paye_par` (type inféré: TEXT)
+- `statut_reglement` (type inféré: TEXT)
+- `statut_remboursement` (type inféré: TEXT)
 
 **Référencée dans les fichiers:**
 
@@ -408,22 +378,21 @@ Il sert de référence pour les migrations et la maintenance du schéma de base 
 
 **Colonnes détectées:**
 
-- `categorie`
-- `commentaire`
-- `conn`
-- `date_depense`
-- `fournisseur`
-- `id`
-- `items`
-- `membre_id`
-- `module_id`
-- `montant`
-- `moyen_paiement`
-- `numero_cheque`
-- `numero_facture`
-- `paye_par`
-- `statut_reglement`
-- `statut_remboursement`
+- `categorie` (type inféré: TEXT)
+- `commentaire` (type inféré: TEXT)
+- `date_depense` (type inféré: DATE)
+- `fournisseur` (type inféré: TEXT)
+- `id` (type inféré: INTEGER)
+- `items` (type inféré: TEXT)
+- `membre_id` (type inféré: INTEGER)
+- `module_id` (type inféré: INTEGER)
+- `montant` (type inféré: REAL)
+- `moyen_paiement` (type inféré: TEXT)
+- `numero_cheque` (type inféré: TEXT)
+- `numero_facture` (type inféré: TEXT)
+- `paye_par` (type inféré: TEXT)
+- `statut_reglement` (type inféré: TEXT)
+- `statut_remboursement` (type inféré: TEXT)
 
 **Référencée dans les fichiers:**
 
@@ -435,35 +404,27 @@ Il sert de référence pour les migrations et la maintenance du schéma de base 
 
 **Colonnes détectées:**
 
-- `DISTINCT`
-- `banque`
-- `banques`
-- `c`
-- `cmb_type`
-- `column`
-- `commentaire`
-- `conn`
-- `date`
-- `df`
-- `ent_date`
-- `ent_montant`
-- `id`
-- `id_`
-- `iid`
-- `index`
-- `item`
-- `montant`
-- `new_val`
-- `params`
-- `pointe`
-- `reference`
-- `row`
-- `state`
-- `sticky`
-- `text`
-- `type`
-- `values`
-- `win`
+- `DISTINCT` (type inféré: TEXT)
+- `banque` (type inféré: TEXT)
+- `banques` (type inféré: TEXT)
+- `c` (type inféré: TEXT)
+- `cmb_type` (type inféré: TEXT)
+- `commentaire` (type inféré: TEXT)
+- `date` (type inféré: DATE)
+- `ent_date` (type inféré: DATE)
+- `ent_montant` (type inféré: REAL)
+- `id` (type inféré: INTEGER)
+- `id_` (type inféré: TEXT)
+- `iid` (type inféré: TEXT)
+- `index` (type inféré: TEXT)
+- `item` (type inféré: TEXT)
+- `montant` (type inféré: REAL)
+- `new_val` (type inféré: TEXT)
+- `pointe` (type inféré: TEXT)
+- `reference` (type inféré: TEXT)
+- `sticky` (type inféré: TEXT)
+- `type` (type inféré: TEXT)
+- `win` (type inféré: TEXT)
 
 **Référencée dans les fichiers:**
 
@@ -475,15 +436,14 @@ Il sert de référence pour les migrations et la maintenance du schéma de base 
 
 **Colonnes détectées:**
 
-- `conn`
-- `date`
-- `id`
-- `items`
-- `justificatif`
-- `montant`
-- `row_factory`
-- `source`
-- `type`
+- `date` (type inféré: DATE)
+- `id` (type inféré: INTEGER)
+- `items` (type inféré: TEXT)
+- `justificatif` (type inféré: TEXT)
+- `montant` (type inféré: REAL)
+- `row_factory` (type inféré: TEXT)
+- `source` (type inféré: TEXT)
+- `type` (type inféré: TEXT)
 
 **Référencée dans les fichiers:**
 
@@ -496,36 +456,25 @@ Il sert de référence pour les migrations et la maintenance du schéma de base 
 
 **Colonnes détectées:**
 
-- `caisse_id`
-- `command`
-- `conn`
-- `date`
-- `date_var`
-- `desc`
-- `desc_var`
-- `description`
-- `id`
-- `justif`
-- `justif_var`
-- `justificatif`
-- `montant`
-- `montant_float`
-- `montant_var`
-- `on_save`
-- `op`
-- `operation_id`
-- `padx`
-- `pady`
-- `side`
-- `state`
-- `text`
-- `textvariable`
-- `typ`
-- `type_op`
-- `type_ops`
-- `type_var`
-- `values`
-- `width`
+- `caisse_id` (type inféré: INTEGER)
+- `date` (type inféré: DATE)
+- `date_var` (type inféré: DATE)
+- `desc` (type inféré: TEXT)
+- `desc_var` (type inféré: TEXT)
+- `description` (type inféré: TEXT)
+- `id` (type inféré: INTEGER)
+- `justif` (type inféré: TEXT)
+- `justif_var` (type inféré: TEXT)
+- `justificatif` (type inféré: TEXT)
+- `montant` (type inféré: REAL)
+- `montant_float` (type inféré: REAL)
+- `montant_var` (type inféré: REAL)
+- `op` (type inféré: TEXT)
+- `operation_id` (type inféré: INTEGER)
+- `typ` (type inféré: TEXT)
+- `type_op` (type inféré: TEXT)
+- `type_ops` (type inféré: TEXT)
+- `type_var` (type inféré: TEXT)
 
 **Référencée dans les fichiers:**
 
@@ -537,46 +486,35 @@ Il sert de référence pour les migrations et la maintenance du schéma de base 
 
 **Colonnes détectées:**
 
-- `btn_frame`
-- `caisse`
-- `caisse_id`
-- `cid`
-- `columns`
-- `command`
-- `commentaire`
-- `conn`
-- `event_id`
-- `exist`
-- `expand`
-- `fill`
-- `fond_debut`
-- `fond_fin`
-- `id`
-- `moment`
-- `montant`
-- `nom`
-- `nom_caisse`
-- `nom_var`
-- `on_save`
-- `padx`
-- `pady`
-- `r`
-- `recettes`
-- `resp`
-- `resp_var`
-- `responsable`
-- `show`
-- `side`
-- `solde`
-- `solde_float`
-- `solde_initial`
-- `solde_var`
-- `source`
-- `text`
-- `textvariable`
-- `tree`
-- `type`
-- `width`
+- `btn_frame` (type inféré: TEXT)
+- `caisse` (type inféré: TEXT)
+- `caisse_id` (type inféré: INTEGER)
+- `cid` (type inféré: TEXT)
+- `columns` (type inféré: TEXT)
+- `commentaire` (type inféré: TEXT)
+- `event_id` (type inféré: INTEGER)
+- `exist` (type inféré: TEXT)
+- `fond_debut` (type inféré: TEXT)
+- `fond_fin` (type inféré: TEXT)
+- `id` (type inféré: INTEGER)
+- `moment` (type inféré: TEXT)
+- `montant` (type inféré: REAL)
+- `nom` (type inféré: TEXT)
+- `nom_caisse` (type inféré: TEXT)
+- `nom_var` (type inféré: TEXT)
+- `r` (type inféré: TEXT)
+- `recettes` (type inféré: TEXT)
+- `resp` (type inféré: TEXT)
+- `resp_var` (type inféré: TEXT)
+- `responsable` (type inféré: TEXT)
+- `show` (type inféré: TEXT)
+- `solde` (type inféré: REAL)
+- `solde_float` (type inféré: REAL)
+- `solde_initial` (type inféré: REAL)
+- `solde_var` (type inféré: REAL)
+- `source` (type inféré: TEXT)
+- `tree` (type inféré: TEXT)
+- `type` (type inféré: TEXT)
 
 **Référencée dans les fichiers:**
 
@@ -590,40 +528,31 @@ Il sert de référence pour les migrations et la maintenance du schéma de base 
 
 **Colonnes détectées:**
 
-- `0`
-- `COALESCE`
-- `categorie`
-- `categorie_var`
-- `command`
-- `commentaire`
-- `conn`
-- `date`
-- `date_depense`
-- `date_var`
-- `dep`
-- `depense_id`
-- `desc`
-- `desc_var`
-- `description`
-- `event_id`
-- `fournisseur`
-- `fournisseur_var`
-- `id`
-- `justif`
-- `justif_var`
-- `justificatif`
-- `membre_id`
-- `montant`
-- `montant_float`
-- `montant_var`
-- `on_save`
-- `padx`
-- `pady`
-- `paye_par`
-- `side`
-- `text`
-- `textvariable`
-- `width`
+- `0` (type inféré: TEXT)
+- `COALESCE` (type inféré: TEXT)
+- `categorie` (type inféré: TEXT)
+- `categorie_var` (type inféré: TEXT)
+- `commentaire` (type inféré: TEXT)
+- `date` (type inféré: DATE)
+- `date_depense` (type inféré: DATE)
+- `date_var` (type inféré: DATE)
+- `dep` (type inféré: TEXT)
+- `depense_id` (type inféré: INTEGER)
+- `desc` (type inféré: TEXT)
+- `desc_var` (type inféré: TEXT)
+- `description` (type inféré: TEXT)
+- `event_id` (type inféré: INTEGER)
+- `fournisseur` (type inféré: TEXT)
+- `fournisseur_var` (type inféré: TEXT)
+- `id` (type inféré: INTEGER)
+- `justif` (type inféré: TEXT)
+- `justif_var` (type inféré: TEXT)
+- `justificatif` (type inféré: TEXT)
+- `membre_id` (type inféré: INTEGER)
+- `montant` (type inféré: REAL)
+- `montant_float` (type inféré: REAL)
+- `montant_var` (type inféré: REAL)
+- `paye_par` (type inféré: TEXT)
 
 **Référencée dans les fichiers:**
 
@@ -637,72 +566,64 @@ Il sert de référence pour les migrations et la maintenance du schéma de base 
 
 **Colonnes détectées:**
 
-- `FocusOut`
-- `MAX`
-- `Return`
-- `ch`
-- `choix`
-- `col`
-- `col_idx`
-- `columns`
-- `conn`
-- `df`
-- `dlg`
-- `dlg_prix`
-- `e`
-- `editing_entry`
-- `entry`
-- `field`
-- `field_id`
-- `fields`
-- `height`
-- `id`
-- `id_col`
-- `id_col_total`
-- `idx`
-- `iid`
-- `implémentée`
-- `initialvalue`
-- `modele_colonne`
-- `modele_id`
-- `module_id`
-- `name`
-- `new_price`
-- `new_value`
-- `next_idx`
-- `next_row`
-- `old_price`
-- `on_save`
-- `parent`
-- `parent_dir`
-- `prix`
-- `prix_unitaire`
-- `qte`
-- `region`
-- `res`
-- `res_total`
-- `row`
-- `row_idx`
-- `row_index`
-- `row_values`
-- `rowid`
-- `rowidx`
-- `rows`
-- `sel`
-- `selected_field`
-- `title`
-- `total`
-- `typ`
-- `val`
-- `val_prix`
-- `val_row`
-- `valeur`
-- `value`
-- `values`
-- `width`
-- `with_modele_colonne`
-- `x`
-- `y`
+- `FocusOut` (type inféré: TEXT)
+- `MAX` (type inféré: TEXT)
+- `Return` (type inféré: TEXT)
+- `ch` (type inféré: TEXT)
+- `choix` (type inféré: TEXT)
+- `col` (type inféré: TEXT)
+- `col_idx` (type inféré: TEXT)
+- `columns` (type inféré: TEXT)
+- `dlg` (type inféré: TEXT)
+- `dlg_prix` (type inféré: REAL)
+- `e` (type inféré: TEXT)
+- `editing_entry` (type inféré: TEXT)
+- `entry` (type inféré: TEXT)
+- `field` (type inféré: TEXT)
+- `field_id` (type inféré: INTEGER)
+- `fields` (type inféré: TEXT)
+- `id` (type inféré: INTEGER)
+- `id_col` (type inféré: INTEGER)
+- `id_col_total` (type inféré: REAL)
+- `idx` (type inféré: TEXT)
+- `iid` (type inféré: TEXT)
+- `implémentée` (type inféré: TEXT)
+- `initialvalue` (type inféré: TEXT)
+- `modele_colonne` (type inféré: TEXT)
+- `modele_id` (type inféré: INTEGER)
+- `module_id` (type inféré: INTEGER)
+- `name` (type inféré: TEXT)
+- `new_price` (type inféré: TEXT)
+- `new_value` (type inféré: TEXT)
+- `next_idx` (type inféré: TEXT)
+- `next_row` (type inféré: TEXT)
+- `old_price` (type inféré: TEXT)
+- `parent` (type inféré: TEXT)
+- `parent_dir` (type inféré: TEXT)
+- `prix` (type inféré: REAL)
+- `prix_unitaire` (type inféré: REAL)
+- `qte` (type inféré: TEXT)
+- `region` (type inféré: TEXT)
+- `res` (type inféré: TEXT)
+- `res_total` (type inféré: REAL)
+- `row_idx` (type inféré: TEXT)
+- `row_index` (type inféré: TEXT)
+- `row_values` (type inféré: TEXT)
+- `rowid` (type inféré: TEXT)
+- `rowidx` (type inféré: TEXT)
+- `rows` (type inféré: TEXT)
+- `sel` (type inféré: TEXT)
+- `selected_field` (type inféré: TEXT)
+- `total` (type inféré: REAL)
+- `typ` (type inféré: TEXT)
+- `val` (type inféré: TEXT)
+- `val_prix` (type inféré: REAL)
+- `val_row` (type inféré: TEXT)
+- `valeur` (type inféré: REAL)
+- `value` (type inféré: TEXT)
+- `with_modele_colonne` (type inféré: TEXT)
+- `x` (type inféré: TEXT)
+- `y` (type inféré: TEXT)
 
 **Référencée dans les fichiers:**
 
@@ -716,35 +637,24 @@ Il sert de référence pour les migrations et la maintenance du schéma de base 
 
 **Colonnes détectées:**
 
-- `btn_frame`
-- `champ`
-- `cols`
-- `columns`
-- `command`
-- `conn`
-- `df`
-- `expand`
-- `fid`
-- `fill`
-- `id`
-- `index`
-- `initialvalue`
-- `modele_colonne`
-- `module_id`
-- `new_price`
-- `nom_champ`
-- `old_price`
-- `padx`
-- `pady`
-- `params`
-- `prix_unitaire`
-- `selectmode`
-- `show`
-- `side`
-- `text`
-- `tree`
-- `type_champ`
-- `width`
+- `btn_frame` (type inféré: TEXT)
+- `champ` (type inféré: TEXT)
+- `cols` (type inféré: TEXT)
+- `columns` (type inféré: TEXT)
+- `fid` (type inféré: TEXT)
+- `id` (type inféré: INTEGER)
+- `index` (type inféré: TEXT)
+- `initialvalue` (type inféré: TEXT)
+- `modele_colonne` (type inféré: TEXT)
+- `module_id` (type inféré: INTEGER)
+- `new_price` (type inféré: TEXT)
+- `nom_champ` (type inféré: TEXT)
+- `old_price` (type inféré: TEXT)
+- `prix_unitaire` (type inféré: REAL)
+- `selectmode` (type inféré: TEXT)
+- `show` (type inféré: TEXT)
+- `tree` (type inféré: TEXT)
+- `type_champ` (type inféré: TEXT)
 
 **Référencée dans les fichiers:**
 
@@ -759,77 +669,62 @@ Il sert de référence pour les migrations et la maintenance du schéma de base 
 
 **Colonnes détectées:**
 
-- `1`
-- `ComboboxSelected`
-- `btnf`
-- `colonne_frame`
-- `colonne_idx`
-- `colonne_label`
-- `colonne_menu`
-- `colonne_var`
-- `colonnes_choices`
-- `column`
-- `columns`
-- `columnspan`
-- `command`
-- `comment`
-- `comment_var`
-- `commentaire`
-- `conn`
-- `editing_entry`
-- `event`
-- `event_id`
-- `expand`
-- `field_id`
-- `fields`
-- `fill`
-- `font`
-- `id`
-- `id_col_total`
-- `idx`
-- `mem`
-- `membre_nom`
-- `mid`
-- `mods`
-- `module_choices`
-- `module_id`
-- `module_idx`
-- `module_menu`
-- `module_name`
-- `module_var`
-- `montant`
-- `montant_entry`
-- `montant_var`
-- `name`
-- `nom_module`
-- `on_save`
-- `padx`
-- `pady`
-- `prix_var`
-- `r`
-- `recette_id`
-- `result`
-- `rid`
-- `row`
-- `rows`
-- `sel`
-- `selectmode`
-- `show`
-- `side`
-- `somme`
-- `source`
-- `source_var`
-- `state`
-- `sticky`
-- `text`
-- `textvariable`
-- `tree`
-- `type_var`
-- `types`
-- `value`
-- `values`
-- `variable`
-- `width`
+- `1` (type inféré: TEXT)
+- `ComboboxSelected` (type inféré: TEXT)
+- `btnf` (type inféré: TEXT)
+- `colonne_frame` (type inféré: TEXT)
+- `colonne_idx` (type inféré: TEXT)
+- `colonne_label` (type inféré: TEXT)
+- `colonne_menu` (type inféré: TEXT)
+- `colonne_var` (type inféré: TEXT)
+- `colonnes_choices` (type inféré: TEXT)
+- `columns` (type inféré: TEXT)
+- `columnspan` (type inféré: TEXT)
+- `comment` (type inféré: TEXT)
+- `comment_var` (type inféré: TEXT)
+- `commentaire` (type inféré: TEXT)
+- `editing_entry` (type inféré: TEXT)
+- `event` (type inféré: TEXT)
+- `event_id` (type inféré: INTEGER)
+- `field_id` (type inféré: INTEGER)
+- `fields` (type inféré: TEXT)
+- `font` (type inféré: TEXT)
+- `id` (type inféré: INTEGER)
+- `id_col_total` (type inféré: REAL)
+- `idx` (type inféré: TEXT)
+- `mem` (type inféré: TEXT)
+- `membre_nom` (type inféré: TEXT)
+- `mid` (type inféré: TEXT)
+- `mods` (type inféré: TEXT)
+- `module_choices` (type inféré: TEXT)
+- `module_id` (type inféré: INTEGER)
+- `module_idx` (type inféré: TEXT)
+- `module_menu` (type inféré: TEXT)
+- `module_name` (type inféré: TEXT)
+- `module_var` (type inféré: TEXT)
+- `montant` (type inféré: REAL)
+- `montant_entry` (type inféré: REAL)
+- `montant_var` (type inféré: REAL)
+- `name` (type inféré: TEXT)
+- `nom_module` (type inféré: TEXT)
+- `prix_var` (type inféré: REAL)
+- `r` (type inféré: TEXT)
+- `recette_id` (type inféré: INTEGER)
+- `result` (type inféré: TEXT)
+- `rid` (type inféré: TEXT)
+- `rows` (type inféré: TEXT)
+- `sel` (type inféré: TEXT)
+- `selectmode` (type inféré: TEXT)
+- `show` (type inféré: TEXT)
+- `somme` (type inféré: TEXT)
+- `source` (type inféré: TEXT)
+- `source_var` (type inféré: TEXT)
+- `sticky` (type inféré: TEXT)
+- `tree` (type inféré: TEXT)
+- `type_var` (type inféré: TEXT)
+- `types` (type inféré: TEXT)
+- `value` (type inféré: TEXT)
+- `variable` (type inféré: TEXT)
 
 **Référencée dans les fichiers:**
 
@@ -844,38 +739,29 @@ Il sert de référence pour les migrations et la maintenance du schéma de base 
 
 **Colonnes détectées:**
 
-- `banque`
-- `banque_var`
-- `classe`
-- `classe_var`
-- `command`
-- `comment`
-- `comment_var`
-- `commentaire`
-- `conn`
-- `d`
-- `event_id`
-- `id`
-- `mode`
-- `mode_paiement`
-- `mode_var`
-- `montant`
-- `montant_var`
-- `name`
-- `nom_payeuse`
-- `nom_var`
-- `numero`
-- `numero_cheque`
-- `numero_var`
-- `on_save`
-- `p`
-- `padx`
-- `pady`
-- `payment_id`
-- `side`
-- `text`
-- `textvariable`
-- `width`
+- `banque` (type inféré: TEXT)
+- `banque_var` (type inféré: TEXT)
+- `classe` (type inféré: TEXT)
+- `classe_var` (type inféré: TEXT)
+- `comment` (type inféré: TEXT)
+- `comment_var` (type inféré: TEXT)
+- `commentaire` (type inféré: TEXT)
+- `d` (type inféré: TEXT)
+- `event_id` (type inféré: INTEGER)
+- `id` (type inféré: INTEGER)
+- `mode` (type inféré: TEXT)
+- `mode_paiement` (type inféré: TEXT)
+- `mode_var` (type inféré: TEXT)
+- `montant` (type inféré: REAL)
+- `montant_var` (type inféré: REAL)
+- `name` (type inféré: TEXT)
+- `nom_payeuse` (type inféré: TEXT)
+- `nom_var` (type inféré: TEXT)
+- `numero` (type inféré: TEXT)
+- `numero_cheque` (type inféré: TEXT)
+- `numero_var` (type inféré: TEXT)
+- `p` (type inféré: TEXT)
+- `payment_id` (type inféré: INTEGER)
 
 **Référencée dans les fichiers:**
 
@@ -887,38 +773,28 @@ Il sert de référence pour les migrations et la maintenance du schéma de base 
 
 **Colonnes détectées:**
 
-- `0`
-- `COALESCE`
-- `command`
-- `commentaire`
-- `conn`
-- `date`
-- `date_var`
-- `depenses`
-- `desc`
-- `desc_var`
-- `description`
-- `eid`
-- `ev`
-- `event_id`
-- `gain`
-- `id`
-- `lieu`
-- `lieu_var`
-- `module_id`
-- `montant`
-- `name`
-- `name_var`
-- `on_save`
-- `padx`
-- `pady`
-- `sel`
-- `side`
-- `source`
-- `text`
-- `textvariable`
-- `values`
-- `width`
+- `0` (type inféré: TEXT)
+- `COALESCE` (type inféré: TEXT)
+- `commentaire` (type inféré: TEXT)
+- `date` (type inféré: DATE)
+- `date_var` (type inféré: DATE)
+- `depenses` (type inféré: TEXT)
+- `desc` (type inféré: TEXT)
+- `desc_var` (type inféré: TEXT)
+- `description` (type inféré: TEXT)
+- `eid` (type inféré: TEXT)
+- `ev` (type inféré: TEXT)
+- `event_id` (type inféré: INTEGER)
+- `gain` (type inféré: TEXT)
+- `id` (type inféré: INTEGER)
+- `lieu` (type inféré: TEXT)
+- `lieu_var` (type inféré: TEXT)
+- `module_id` (type inféré: INTEGER)
+- `montant` (type inféré: REAL)
+- `name` (type inféré: TEXT)
+- `name_var` (type inféré: TEXT)
+- `sel` (type inféré: TEXT)
+- `source` (type inféré: TEXT)
 
 **Référencée dans les fichiers:**
 
@@ -932,74 +808,69 @@ Il sert de référence pour les migrations et la maintenance du schéma de base 
 
 **Colonnes détectées:**
 
-- `Caisses`
-- `Dépenses`
-- `LOT`
-- `Recettes`
-- `SUBVENTIONS`
-- `alignment`
-- `b`
-- `bottomMargin`
-- `caisse_id`
-- `caisses`
-- `caisses_data`
-- `caisses_details`
-- `caisses_details_df`
-- `cid`
-- `colWidths`
-- `conn`
-- `data`
-- `date`
-- `debut`
-- `defaultextension`
-- `depenses`
-- `depenses_data`
-- `description`
-- `doc`
-- `dons`
-- `dossier`
-- `dépenses`
-- `elements`
-- `encoding`
-- `enregistré`
-- `event_id`
-- `events`
-- `evt_id`
-- `ext`
-- `filename`
-- `filetypes`
-- `fin`
-- `format`
-- `gain`
-- `hAlign`
-- `i`
-- `id`
-- `index`
-- `initialfile`
-- `inv_id`
-- `leftMargin`
-- `lieu`
-- `moment`
-- `name`
-- `pagesize`
-- `params`
-- `qte_constatee`
-- `recettes`
-- `recettes_data`
-- `rightMargin`
-- `sheet_name`
-- `stock_id`
-- `styles`
-- `subventions`
-- `synth_data`
-- `synth_table`
-- `t`
-- `title`
-- `topMargin`
-- `total_depenses`
-- `total_recettes`
-- `type`
-- `vals`
+- `Caisses` (type inféré: TEXT)
+- `Dépenses` (type inféré: TEXT)
+- `LOT` (type inféré: TEXT)
+- `Recettes` (type inféré: TEXT)
+- `SUBVENTIONS` (type inféré: TEXT)
+- `alignment` (type inféré: TEXT)
+- `b` (type inféré: TEXT)
+- `bottomMargin` (type inféré: TEXT)
+- `caisse_id` (type inféré: INTEGER)
+- `caisses` (type inféré: TEXT)
+- `caisses_data` (type inféré: TEXT)
+- `caisses_details` (type inféré: TEXT)
+- `caisses_details_df` (type inféré: TEXT)
+- `cid` (type inféré: TEXT)
+- `colWidths` (type inféré: TEXT)
+- `data` (type inféré: TEXT)
+- `date` (type inféré: DATE)
+- `debut` (type inféré: TEXT)
+- `depenses` (type inféré: TEXT)
+- `depenses_data` (type inféré: TEXT)
+- `description` (type inféré: TEXT)
+- `doc` (type inféré: TEXT)
+- `dons` (type inféré: TEXT)
+- `dossier` (type inféré: TEXT)
+- `dépenses` (type inféré: TEXT)
+- `elements` (type inféré: TEXT)
+- `encoding` (type inféré: TEXT)
+- `enregistré` (type inféré: TEXT)
+- `event_id` (type inféré: INTEGER)
+- `events` (type inféré: TEXT)
+- `evt_id` (type inféré: INTEGER)
+- `ext` (type inféré: TEXT)
+- `filename` (type inféré: TEXT)
+- `fin` (type inféré: TEXT)
+- `format` (type inféré: TEXT)
+- `gain` (type inféré: TEXT)
+- `hAlign` (type inféré: TEXT)
+- `i` (type inféré: TEXT)
+- `id` (type inféré: INTEGER)
+- `index` (type inféré: TEXT)
+- `initialfile` (type inféré: TEXT)
+- `inv_id` (type inféré: INTEGER)
+- `leftMargin` (type inféré: TEXT)
+- `lieu` (type inféré: TEXT)
+- `moment` (type inféré: TEXT)
+- `name` (type inféré: TEXT)
+- `pagesize` (type inféré: TEXT)
+- `qte_constatee` (type inféré: TEXT)
+- `recettes` (type inféré: TEXT)
+- `recettes_data` (type inféré: TEXT)
+- `rightMargin` (type inféré: TEXT)
+- `sheet_name` (type inféré: TEXT)
+- `stock_id` (type inféré: INTEGER)
+- `styles` (type inféré: TEXT)
+- `subventions` (type inféré: TEXT)
+- `synth_data` (type inféré: TEXT)
+- `synth_table` (type inféré: TEXT)
+- `t` (type inféré: TEXT)
+- `topMargin` (type inféré: TEXT)
+- `total_depenses` (type inféré: REAL)
+- `total_recettes` (type inféré: REAL)
+- `type` (type inféré: TEXT)
+- `vals` (type inféré: TEXT)
 
 **Référencée dans les fichiers:**
 
@@ -1014,31 +885,17 @@ Il sert de référence pour les migrations et la maintenance du schéma de base 
 
 ---
 
-### Table: `for`
-
-**Colonnes détectées:**
-
-- `before`
-- `table`
-- `table_matches`
-
-**Référencée dans les fichiers:**
-
-
----
-
 ### Table: `fournisseurs`
 
 **Colonnes détectées:**
 
-- `confirm`
-- `conn`
-- `fid`
-- `id`
-- `initialvalue`
-- `name`
-- `new_nom`
-- `parent`
+- `confirm` (type inféré: TEXT)
+- `fid` (type inféré: TEXT)
+- `id` (type inféré: INTEGER)
+- `initialvalue` (type inféré: TEXT)
+- `name` (type inféré: TEXT)
+- `new_nom` (type inféré: TEXT)
+- `parent` (type inféré: TEXT)
 
 **Référencée dans les fichiers:**
 
@@ -1052,12 +909,11 @@ Il sert de référence pour les migrations et la maintenance du schéma de base 
 
 **Colonnes détectées:**
 
-- `cid`
-- `conn`
-- `date_cloture`
-- `id`
-- `initialvalue`
-- `new_date`
+- `cid` (type inféré: TEXT)
+- `date_cloture` (type inféré: DATE)
+- `id` (type inféré: INTEGER)
+- `initialvalue` (type inféré: TEXT)
+- `new_date` (type inféré: DATE)
 
 **Référencée dans les fichiers:**
 
@@ -1069,14 +925,14 @@ Il sert de référence pour les migrations et la maintenance du schéma de base 
 
 **Colonnes détectées:**
 
-- `c.name`
-- `event_id`
-- `inventaire_id`
-- `l.quantite_constatee`
-- `l.stock_id`
-- `quantite_constatee`
-- `s.name`
-- `stock_id`
+- `c.name` (type inféré: TEXT)
+- `event_id` (type inféré: INTEGER)
+- `inventaire_id` (type inféré: INTEGER)
+- `l.quantite_constatee` (type inféré: INTEGER)
+- `l.stock_id` (type inféré: INTEGER)
+- `quantite_constatee` (type inféré: INTEGER)
+- `s.name` (type inféré: TEXT)
+- `stock_id` (type inféré: INTEGER)
 
 **Référencée dans les fichiers:**
 
@@ -1089,9 +945,12 @@ Il sert de référence pour les migrations et la maintenance du schéma de base 
 
 **Colonnes détectées:**
 
-- `commentaire`
-- `date_inventaire`
-- `event_id`
+- `commentaire` (type inféré: TEXT)
+- `date` (type inféré: DATE)
+- `date_inventaire` (type inféré: DATE)
+- `evenement` (type inféré: TEXT)
+- `event_id` (type inféré: INTEGER)
+- `id` (type inféré: INTEGER)
 
 **Référencée dans les fichiers:**
 
@@ -1103,46 +962,28 @@ Il sert de référence pour les migrations et la maintenance du schéma de base 
 
 **Colonnes détectées:**
 
-- `command`
-- `commentaire`
-- `commentaire_var`
-- `conn`
-- `cotisation`
-- `cotisation_menu`
-- `cotisation_var`
-- `date_adh`
-- `date_adhesion`
-- `date_var`
-- `defaultextension`
-- `df`
-- `email`
-- `email_var`
-- `filepath`
-- `filetypes`
-- `header`
-- `id`
-- `member_id`
-- `name`
-- `nom_var`
-- `on_save`
-- `padx`
-- `pady`
-- `prenom`
-- `prenom_var`
-- `row`
-- `side`
-- `state`
-- `statut`
-- `statut_menu`
-- `statut_var`
-- `tel`
-- `tel_var`
-- `telephone`
-- `text`
-- `textvariable`
-- `title`
-- `values`
-- `width`
+- `commentaire` (type inféré: TEXT)
+- `commentaire_var` (type inféré: TEXT)
+- `cotisation` (type inféré: TEXT)
+- `cotisation_menu` (type inféré: TEXT)
+- `cotisation_var` (type inféré: TEXT)
+- `date_adh` (type inféré: DATE)
+- `date_adhesion` (type inféré: DATE)
+- `date_var` (type inféré: DATE)
+- `email` (type inféré: TEXT)
+- `email_var` (type inféré: TEXT)
+- `id` (type inféré: INTEGER)
+- `member_id` (type inféré: INTEGER)
+- `name` (type inféré: TEXT)
+- `nom_var` (type inféré: TEXT)
+- `prenom` (type inféré: TEXT)
+- `prenom_var` (type inféré: TEXT)
+- `statut` (type inféré: TEXT)
+- `statut_menu` (type inféré: TEXT)
+- `statut_var` (type inféré: TEXT)
+- `tel` (type inféré: TEXT)
+- `tel_var` (type inféré: TEXT)
+- `telephone` (type inféré: TEXT)
 
 **Référencée dans les fichiers:**
 
@@ -1156,15 +997,22 @@ Il sert de référence pour les migrations et la maintenance du schéma de base 
 
 **Colonnes détectées:**
 
-- `m.commentaire`
-- `m.date`
-- `m.date_peremption`
-- `m.id`
-- `m.prix_achat_total`
-- `m.prix_unitaire`
-- `m.quantite`
-- `m.type`
-- `s.name`
+- `date` (type inféré: DATE)
+- `id` (type inféré: INTEGER)
+- `m.commentaire` (type inféré: TEXT)
+- `m.date` (type inféré: DATE)
+- `m.date_peremption` (type inféré: DATE)
+- `m.id` (type inféré: TEXT)
+- `m.prix_achat_total` (type inféré: REAL)
+- `m.prix_unitaire` (type inféré: REAL)
+- `m.quantite` (type inféré: INTEGER)
+- `m.type` (type inféré: TEXT)
+- `name` (type inféré: TEXT)
+- `prix_achat_total` (type inféré: REAL)
+- `prix_unitaire` (type inféré: REAL)
+- `quantite` (type inféré: INTEGER)
+- `s.name` (type inféré: TEXT)
+- `type` (type inféré: TEXT)
 
 **Référencée dans les fichiers:**
 
@@ -1176,106 +1024,101 @@ Il sert de référence pour les migrations et la maintenance du schéma de base 
 
 **Colonnes détectées:**
 
-- `"""`
-- `"Erreur`
-- `"La`
-- `'apres'`
-- `'hors_evenement'))`
-- `article_id`
-- `banque`
-- `but_asso`
-- `caisse_id`
-- `categorie`
-- `categorie_id`
-- `cid`
-- `classe`
-- `cloture`
-- `comm_var`
-- `command`
-- `commentaire`
-- `conn`
-- `contenance`
-- `cotisation`
-- `data`
-- `date`
-- `date_achat`
-- `date_adhesion`
-- `date_cloture`
-- `date_depense`
-- `date_fin`
-- `date_inventaire`
-- `date_mouvement`
-- `date_peremption`
-- `date_recette`
-- `date_var`
-- `description`
-- `disponible_banque`
-- `ecole`
-- `ecole_var`
-- `email`
-- `event_id`
-- `exercice`
-- `f"Erreur`
-- `facture`
-- `field_id`
-- `fournisseur`
-- `id`
-- `id_col_total`
-- `inventaire_id`
-- `justificatif`
-- `lieu`
-- `lot`
-- `membre_id`
-- `mode_paiement`
-- `modele_colonne`
-- `modele_id`
-- `module_id`
-- `moment`
-- `montant`
-- `montant_float`
-- `montant_var`
-- `motif`
-- `moyen_paiement`
-- `name`
-- `nom_caisse`
-- `nom_champ`
-- `nom_module`
-- `nom_payeuse`
-- `numero_cheque`
-- `numero_facture`
-- `pady`
-- `parent_id`
-- `paye_par`
-- `pointe`
-- `prenom`
-- `prix_achat_total`
-- `prix_unitaire`
-- `purchase_price`
-- `quantite`
-- `quantite_constatee`
-- `reference`
-- `row_index`
-- `seuil_alerte`
-- `solde`
-- `solde_report`
-- `source`
-- `statut`
-- `statut_reglement`
-- `statut_remboursement`
-- `stock`
-- `stock_id`
-- `telephone`
-- `text`
-- `textvariable`
-- `type`
-- `type_champ`
-- `type_inventaire`
-- `type_modele`
-- `type_mouvement`
-- `unite`
-- `valeur`
-- `value`
-- `win`
+- `"""` (type inféré: TEXT)
+- `"Erreur` (type inféré: TEXT)
+- `"La` (type inféré: TEXT)
+- `'apres'` (type inféré: TEXT)
+- `'hors_evenement'))` (type inféré: TEXT)
+- `article_id` (type inféré: INTEGER)
+- `banque` (type inféré: TEXT)
+- `but_asso` (type inféré: TEXT)
+- `caisse_id` (type inféré: INTEGER)
+- `categorie` (type inféré: TEXT)
+- `categorie_id` (type inféré: INTEGER)
+- `cid` (type inféré: TEXT)
+- `classe` (type inféré: TEXT)
+- `cloture` (type inféré: INTEGER)
+- `comm_var` (type inféré: TEXT)
+- `commentaire` (type inféré: TEXT)
+- `contenance` (type inféré: TEXT)
+- `cotisation` (type inféré: TEXT)
+- `data` (type inféré: TEXT)
+- `date` (type inféré: DATE)
+- `date_achat` (type inféré: TEXT)
+- `date_adhesion` (type inféré: TEXT)
+- `date_cloture` (type inféré: TEXT)
+- `date_depense` (type inféré: TEXT)
+- `date_fin` (type inféré: TEXT)
+- `date_inventaire` (type inféré: TEXT)
+- `date_mouvement` (type inféré: TEXT)
+- `date_peremption` (type inféré: TEXT)
+- `date_recette` (type inféré: TEXT)
+- `date_var` (type inféré: DATE)
+- `description` (type inféré: TEXT)
+- `disponible_banque` (type inféré: REAL)
+- `ecole` (type inféré: TEXT)
+- `ecole_var` (type inféré: TEXT)
+- `email` (type inféré: TEXT)
+- `event_id` (type inféré: INTEGER)
+- `exercice` (type inféré: TEXT)
+- `f"Erreur` (type inféré: TEXT)
+- `facture` (type inféré: TEXT)
+- `field_id` (type inféré: INTEGER)
+- `fournisseur` (type inféré: TEXT)
+- `id` (type inféré: INTEGER)
+- `id_col_total` (type inféré: INTEGER)
+- `inventaire_id` (type inféré: INTEGER)
+- `justificatif` (type inféré: TEXT)
+- `lieu` (type inféré: TEXT)
+- `lot` (type inféré: TEXT)
+- `membre_id` (type inféré: INTEGER)
+- `mode_paiement` (type inféré: TEXT)
+- `modele_colonne` (type inféré: TEXT)
+- `modele_id` (type inféré: INTEGER)
+- `module_id` (type inféré: INTEGER)
+- `moment` (type inféré: TEXT)
+- `montant` (type inféré: REAL)
+- `montant_float` (type inféré: REAL)
+- `montant_var` (type inféré: REAL)
+- `motif` (type inféré: TEXT)
+- `moyen_paiement` (type inféré: TEXT)
+- `name` (type inféré: TEXT)
+- `nom_caisse` (type inféré: TEXT)
+- `nom_champ` (type inféré: TEXT)
+- `nom_module` (type inféré: TEXT)
+- `nom_payeuse` (type inféré: TEXT)
+- `numero_cheque` (type inféré: TEXT)
+- `numero_facture` (type inféré: TEXT)
+- `parent_id` (type inféré: INTEGER)
+- `paye_par` (type inféré: TEXT)
+- `pointe` (type inféré: INTEGER)
+- `prenom` (type inféré: TEXT)
+- `prix_achat_total` (type inféré: REAL)
+- `prix_unitaire` (type inféré: REAL)
+- `purchase_price` (type inféré: REAL)
+- `quantite` (type inféré: INTEGER)
+- `quantite_constatee` (type inféré: INTEGER)
+- `reference` (type inféré: TEXT)
+- `row_index` (type inféré: INTEGER)
+- `seuil_alerte` (type inféré: INTEGER)
+- `solde` (type inféré: REAL)
+- `solde_report` (type inféré: REAL)
+- `source` (type inféré: TEXT)
+- `statut` (type inféré: TEXT)
+- `statut_reglement` (type inféré: TEXT)
+- `statut_remboursement` (type inféré: TEXT)
+- `stock` (type inféré: INTEGER)
+- `stock_id` (type inféré: INTEGER)
+- `telephone` (type inféré: TEXT)
+- `type` (type inféré: TEXT)
+- `type_champ` (type inféré: TEXT)
+- `type_inventaire` (type inféré: TEXT)
+- `type_modele` (type inféré: TEXT)
+- `type_mouvement` (type inféré: TEXT)
+- `unite` (type inféré: TEXT)
+- `valeur` (type inféré: TEXT)
+- `value` (type inféré: TEXT)
+- `win` (type inféré: TEXT)
 
 **Référencée dans les fichiers:**
 
@@ -1288,83 +1131,92 @@ Il sert de référence pour les migrations et la maintenance du schéma de base 
 
 **Colonnes détectées:**
 
-- `__name__`
-- `anchor`
-- `bg`
-- `button_frame`
-- `capture_output`
-- `check`
-- `columns`
-- `command`
-- `confirm`
-- `cursor`
-- `cwd`
-- `date`
-- `db_path`
-- `dialog`
-- `error_msg`
-- `existing_cols`
-- `expand`
-- `expected_schema`
-- `fg`
-- `fill`
-- `font`
-- `foreground`
-- `header_frame`
-- `height`
-- `icon`
-- `ignore_button`
-- `info_label`
-- `info_text`
-- `justify`
-- `key`
-- `latest_report`
-- `message`
-- `missing`
-- `missing_cols`
-- `missing_columns`
-- `name`
-- `padx`
-- `pady`
-- `parent`
-- `parent_window`
-- `platform`
-- `real_cols`
-- `real_schema`
-- `recommendation_label`
-- `recommendation_text`
-- `reports`
-- `result`
-- `returncode`
-- `root`
-- `script_path`
-- `scripts_dir`
-- `scrollbar`
-- `show_report`
-- `side`
-- `state`
-- `str`
-- `success`
-- `success_msg`
-- `successfully`
-- `succès`
-- `table_exists`
-- `table_missing`
-- `tables`
-- `text`
-- `text_frame`
-- `text_widget`
-- `timeout`
-- `type`
-- `update_button`
-- `user_choice`
-- `warning_label`
-- `width`
-- `wrap`
-- `wraplength`
-- `x`
-- `y`
-- `yscrollcommand`
+- `__name__` (type inféré: TEXT)
+- `anchor` (type inféré: TEXT)
+- `bg` (type inféré: TEXT)
+- `bool` (type inféré: TEXT)
+- `button_frame` (type inféré: TEXT)
+- `capture_output` (type inféré: TEXT)
+- `check` (type inféré: TEXT)
+- `close_button` (type inféré: TEXT)
+- `col_type` (type inféré: TEXT)
+- `columns` (type inféré: TEXT)
+- `confirm` (type inféré: TEXT)
+- `content` (type inféré: TEXT)
+- `cwd` (type inféré: TEXT)
+- `date` (type inféré: DATE)
+- `db_path` (type inféré: TEXT)
+- `default_value` (type inféré: TEXT)
+- `dialog` (type inféré: TEXT)
+- `encoding` (type inféré: TEXT)
+- `error_msg` (type inféré: TEXT)
+- `existing_cols` (type inféré: TEXT)
+- `expected_schema` (type inféré: TEXT)
+- `fg` (type inféré: TEXT)
+- `font` (type inféré: TEXT)
+- `foreground` (type inféré: TEXT)
+- `fuzzy_match` (type inféré: TEXT)
+- `header_color` (type inféré: TEXT)
+- `header_frame` (type inféré: TEXT)
+- `header_label` (type inféré: TEXT)
+- `icon` (type inféré: TEXT)
+- `ignore_button` (type inféré: TEXT)
+- `info_label` (type inféré: TEXT)
+- `info_text` (type inféré: TEXT)
+- `is_error` (type inféré: TEXT)
+- `justify` (type inféré: TEXT)
+- `key` (type inféré: TEXT)
+- `latest_report` (type inféré: TEXT)
+- `major` (type inféré: TEXT)
+- `message` (type inféré: TEXT)
+- `minor` (type inféré: TEXT)
+- `missing` (type inféré: TEXT)
+- `missing_cols` (type inféré: TEXT)
+- `missing_columns` (type inféré: TEXT)
+- `name` (type inféré: TEXT)
+- `open_button` (type inféré: TEXT)
+- `parent` (type inféré: TEXT)
+- `parent_window` (type inféré: TEXT)
+- `patch` (type inféré: TEXT)
+- `platform` (type inféré: TEXT)
+- `real_cols` (type inféré: TEXT)
+- `real_schema` (type inféré: TEXT)
+- `recommendation_label` (type inféré: TEXT)
+- `recommendation_text` (type inféré: TEXT)
+- `report_path` (type inféré: TEXT)
+- `reports` (type inféré: TEXT)
+- `reports_dir` (type inféré: TEXT)
+- `result` (type inféré: TEXT)
+- `returncode` (type inféré: TEXT)
+- `root` (type inféré: TEXT)
+- `script_path` (type inféré: TEXT)
+- `scrollbar` (type inféré: TEXT)
+- `show_report` (type inféré: TEXT)
+- `str` (type inféré: TEXT)
+- `succes` (type inféré: TEXT)
+- `success` (type inféré: TEXT)
+- `success_msg` (type inféré: TEXT)
+- `successfully` (type inféré: TEXT)
+- `supports_rename` (type inféré: TEXT)
+- `table_exists` (type inféré: TEXT)
+- `table_missing` (type inféré: TEXT)
+- `tables` (type inféré: TEXT)
+- `text_color` (type inféré: TEXT)
+- `text_frame` (type inféré: TEXT)
+- `text_widget` (type inféré: TEXT)
+- `threshold` (type inféré: TEXT)
+- `timeout` (type inféré: TEXT)
+- `title_text` (type inféré: TEXT)
+- `type` (type inféré: TEXT)
+- `update_button` (type inféré: DATE)
+- `user_choice` (type inféré: TEXT)
+- `version` (type inféré: TEXT)
+- `warning_label` (type inféré: TEXT)
+- `wrap` (type inféré: TEXT)
+- `wraplength` (type inféré: TEXT)
+- `x` (type inféré: TEXT)
+- `y` (type inféré: TEXT)
+- `yscrollcommand` (type inféré: TEXT)
 
 **Référencée dans les fichiers:**
 
@@ -1379,44 +1231,36 @@ Il sert de référence pour les migrations et la maintenance du schéma de base 
 
 **Colonnes détectées:**
 
-- `COUNT`
-- `SUM`
-- `c.name`
-- `cat_cb`
-- `cat_var`
-- `categorie_id`
-- `cats`
-- `command`
-- `comment_var`
-- `commentaire`
-- `conn`
-- `date_peremp_var`
-- `date_peremption`
-- `id`
-- `lot`
-- `lot_var`
-- `name`
-- `nom_var`
-- `on_save`
-- `padx`
-- `pady`
-- `qte_var`
-- `quantite`
-- `s.commentaire`
-- `s.date_peremption`
-- `s.id`
-- `s.lot`
-- `s.name`
-- `s.quantite`
-- `s.seuil_alerte`
-- `seuil_alerte`
-- `seuil_var`
-- `side`
-- `state`
-- `stock`
-- `text`
-- `textvariable`
-- `width`
+- `COUNT` (type inféré: INTEGER)
+- `SUM` (type inféré: TEXT)
+- `c.name` (type inféré: TEXT)
+- `cat_cb` (type inféré: TEXT)
+- `cat_var` (type inféré: TEXT)
+- `categorie` (type inféré: TEXT)
+- `categorie_id` (type inféré: INTEGER)
+- `cats` (type inféré: TEXT)
+- `comment_var` (type inféré: TEXT)
+- `commentaire` (type inféré: TEXT)
+- `date_peremp_var` (type inféré: DATE)
+- `date_peremption` (type inféré: DATE)
+- `id` (type inféré: INTEGER)
+- `lot` (type inféré: TEXT)
+- `lot_var` (type inféré: TEXT)
+- `name` (type inféré: TEXT)
+- `nom_var` (type inféré: TEXT)
+- `qte_var` (type inféré: TEXT)
+- `quantite` (type inféré: INTEGER)
+- `s.commentaire` (type inféré: TEXT)
+- `s.date_peremption` (type inféré: DATE)
+- `s.id` (type inféré: TEXT)
+- `s.lot` (type inféré: TEXT)
+- `s.name` (type inféré: TEXT)
+- `s.quantite` (type inféré: INTEGER)
+- `s.seuil_alerte` (type inféré: INTEGER)
+- `seuil_alerte` (type inféré: INTEGER)
+- `seuil_var` (type inféré: INTEGER)
+- `stock` (type inféré: INTEGER)
+- `stock_id` (type inféré: INTEGER)
 
 **Référencée dans les fichiers:**
 
@@ -1432,50 +1276,38 @@ Il sert de référence pour les migrations et la maintenance du schéma de base 
 
 **Colonnes détectées:**
 
-- `article`
-- `article_combo`
-- `article_id`
-- `article_str`
-- `article_var`
-- `articles`
-- `btn_frame`
-- `callback`
-- `categorie`
-- `categorie_entry`
-- `categorie_label`
-- `column`
-- `columnspan`
-- `command`
-- `commentaire`
-- `contenance`
-- `contenance_entry`
-- `contenance_label`
-- `create_new_var`
-- `expand`
-- `fill`
-- `frame`
-- `id`
-- `name`
-- `name_entry`
-- `name_label`
-- `new_categorie_var`
-- `new_contenance_var`
-- `new_name_var`
-- `padx`
-- `pady`
-- `quantite`
-- `quantite_var`
-- `row`
-- `select_label`
-- `side`
-- `state`
-- `sticky`
-- `text`
-- `textvariable`
-- `unite`
-- `value`
-- `variable`
-- `width`
+- `article` (type inféré: TEXT)
+- `article_combo` (type inféré: TEXT)
+- `article_id` (type inféré: INTEGER)
+- `article_str` (type inféré: TEXT)
+- `article_var` (type inféré: TEXT)
+- `articles` (type inféré: TEXT)
+- `btn_frame` (type inféré: TEXT)
+- `callback` (type inféré: TEXT)
+- `categorie` (type inféré: TEXT)
+- `categorie_entry` (type inféré: TEXT)
+- `categorie_label` (type inféré: TEXT)
+- `columnspan` (type inféré: TEXT)
+- `commentaire` (type inféré: TEXT)
+- `contenance` (type inféré: TEXT)
+- `contenance_entry` (type inféré: TEXT)
+- `contenance_label` (type inféré: TEXT)
+- `create_new_var` (type inféré: TEXT)
+- `frame` (type inféré: TEXT)
+- `id` (type inféré: INTEGER)
+- `name` (type inféré: TEXT)
+- `name_entry` (type inféré: TEXT)
+- `name_label` (type inféré: TEXT)
+- `new_categorie_var` (type inféré: TEXT)
+- `new_contenance_var` (type inféré: TEXT)
+- `new_name_var` (type inféré: TEXT)
+- `quantite` (type inféré: INTEGER)
+- `quantite_var` (type inféré: INTEGER)
+- `select_label` (type inféré: TEXT)
+- `sticky` (type inféré: TEXT)
+- `unite` (type inféré: TEXT)
+- `value` (type inféré: TEXT)
+- `variable` (type inféré: TEXT)
 
 **Référencée dans les fichiers:**
 
@@ -1486,8 +1318,8 @@ Il sert de référence pour les migrations et la maintenance du schéma de base 
 
 **Colonnes détectées:**
 
-- `modele_id`
-- `valeur`
+- `modele_id` (type inféré: INTEGER)
+- `valeur` (type inféré: REAL)
 
 **Référencée dans les fichiers:**
 

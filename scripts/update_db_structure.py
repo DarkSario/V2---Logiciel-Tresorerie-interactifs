@@ -24,9 +24,12 @@ import sys
 import shutil
 import argparse
 import traceback
+import subprocess
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Tuple, Set, Optional
+import yaml
+from difflib import SequenceMatcher
 
 # Force UTF-8 encoding for stdout/stderr on Windows to avoid encoding errors
 try:
@@ -309,12 +312,27 @@ REFERENCE_SCHEMA = {
 class DatabaseMigrator:
     """Gestionnaire de migration de base de données."""
     
-    def __init__(self, db_path: str):
+    # SQL reserved words that need quoting (subset of most common ones)
+    SQL_RESERVED_WORDS = {
+        'add', 'all', 'alter', 'and', 'as', 'asc', 'between', 'by', 'case', 'check',
+        'column', 'constraint', 'create', 'cross', 'default', 'delete', 'desc',
+        'distinct', 'drop', 'else', 'end', 'exists', 'foreign', 'from', 'full',
+        'group', 'having', 'in', 'index', 'inner', 'insert', 'into', 'is', 'join',
+        'key', 'left', 'like', 'limit', 'not', 'null', 'on', 'or', 'order', 'outer',
+        'primary', 'references', 'right', 'select', 'set', 'table', 'then', 'to',
+        'union', 'unique', 'update', 'values', 'when', 'where'
+    }
+    
+    def __init__(self, db_path: str, use_yaml_hints: bool = True, fuzzy_threshold: float = 0.75):
         self.db_path = db_path
         self.backup_path = None
         self.migration_log = []
         self.errors = []
         self.report_path = None
+        self.use_yaml_hints = use_yaml_hints
+        self.schema_hints = None
+        self.column_mappings = {}  # Track old_name -> new_name mappings
+        self.fuzzy_threshold = fuzzy_threshold  # Configurable fuzzy matching threshold
     
     def log(self, message: str, level: str = "INFO"):
         """Ajoute un message au log de migration."""
@@ -322,6 +340,120 @@ class DatabaseMigrator:
         log_entry = f"[{timestamp}] {level}: {message}"
         self.migration_log.append(log_entry)
         print(log_entry)
+    
+    def load_schema_hints(self, yaml_path: Optional[str] = None) -> bool:
+        """Charge le fichier schema_hints.yaml ou le génère s'il n'existe pas."""
+        if yaml_path is None:
+            repo_root = Path(__file__).parent.parent
+            yaml_path = repo_root / "db" / "schema_hints.yaml"
+        else:
+            yaml_path = Path(yaml_path)
+        
+        if not yaml_path.exists():
+            self.log(f"Schema hints file not found at {yaml_path}", "WARNING")
+            self.log("Attempting to generate schema hints by running analyze_modules_columns.py...")
+            
+            try:
+                # Run the analyze script to generate the YAML
+                script_path = Path(__file__).parent / "analyze_modules_columns.py"
+                result = subprocess.run(
+                    [sys.executable, str(script_path)],
+                    capture_output=True,
+                    text=True,
+                    timeout=60
+                )
+                
+                if result.returncode != 0:
+                    self.log(f"Failed to generate schema hints: {result.stderr}", "ERROR")
+                    return False
+                
+                self.log("Schema hints generated successfully")
+            except Exception as e:
+                self.log(f"Error generating schema hints: {e}", "ERROR")
+                return False
+        
+        try:
+            with open(yaml_path, 'r', encoding='utf-8') as f:
+                self.schema_hints = yaml.safe_load(f)
+            
+            self.log(f"Loaded schema hints from {yaml_path}")
+            return True
+        except Exception as e:
+            self.log(f"Error loading schema hints: {e}", "WARNING")
+            return False
+    
+    def fuzzy_match_column(self, target_col: str, existing_cols: Set[str], threshold: Optional[float] = None) -> Optional[str]:
+        """
+        Trouve une colonne existante qui correspond au nom cible (fuzzy/case-insensitive).
+        
+        Args:
+            target_col: Nom de colonne recherché
+            existing_cols: Ensemble des colonnes existantes dans la table
+            threshold: Seuil de similarité (0.0 à 1.0), uses instance default if None
+        
+        Returns:
+            Nom de la colonne correspondante ou None
+        """
+        if threshold is None:
+            threshold = self.fuzzy_threshold
+        
+        target_lower = target_col.lower()
+        
+        # 1. Exact match (case-insensitive)
+        for col in existing_cols:
+            if col.lower() == target_lower:
+                return col
+        
+        # 2. Fuzzy match with SequenceMatcher
+        best_match = None
+        best_score = 0.0
+        
+        for col in existing_cols:
+            # Calculate similarity ratio
+            ratio = SequenceMatcher(None, target_lower, col.lower()).ratio()
+            
+            if ratio > best_score and ratio >= threshold:
+                best_score = ratio
+                best_match = col
+        
+        return best_match
+    
+    def quote_identifier(self, identifier: str) -> str:
+        """
+        Quote SQL identifier if it's a reserved word or contains special characters.
+        
+        Args:
+            identifier: Column or table name
+            
+        Returns:
+            Quoted identifier if needed, otherwise original
+        """
+        # Quote if it's a reserved word
+        if identifier.lower() in self.SQL_RESERVED_WORDS:
+            return f'"{identifier}"'
+        
+        # Quote if it contains special characters
+        if not identifier.replace('_', '').isalnum():
+            return f'"{identifier}"'
+        
+        return identifier
+    
+    def get_column_type_from_hints(self, table: str, column: str) -> Optional[str]:
+        """Récupère le type d'une colonne depuis les hints YAML."""
+        if not self.schema_hints or "tables" not in self.schema_hints:
+            return None
+        
+        if table not in self.schema_hints["tables"]:
+            return None
+        
+        table_info = self.schema_hints["tables"][table]
+        if "expected_columns" not in table_info:
+            return None
+        
+        if column not in table_info["expected_columns"]:
+            return None
+        
+        return table_info["expected_columns"][column].get("type", "TEXT")
     
     def create_backup(self) -> bool:
         """Crée une sauvegarde timestampée de la base de données."""
@@ -372,11 +504,68 @@ class DatabaseMigrator:
         
         return schema
     
-    def detect_missing_columns(self, existing_schema: Dict[str, Set[str]]) -> Dict[str, List[Tuple[str, str, str]]]:
-        """Détecte les colonnes manquantes par rapport au schéma de référence."""
+    def check_rename_column_support(self, conn: sqlite3.Connection) -> bool:
+        """Vérifie si SQLite supporte ALTER TABLE RENAME COLUMN (version 3.25.0+)."""
+        try:
+            cursor = conn.cursor()
+            cursor.execute("SELECT sqlite_version()")
+            version = cursor.fetchone()[0]
+            
+            # Parse version (e.g., "3.35.5")
+            major, minor, patch = map(int, version.split('.'))
+            
+            # RENAME COLUMN supported since 3.25.0
+            supports_rename = (major > 3) or (major == 3 and minor >= 25)
+            
+            self.log(f"SQLite version: {version}, RENAME COLUMN support: {supports_rename}")
+            return supports_rename
+        except Exception as e:
+            self.log(f"Could not determine SQLite version: {e}", "WARNING")
+            return False
+    
+    def detect_missing_columns(self, existing_schema: Dict[str, Set[str]]) -> Dict[str, List[Tuple[str, str, str, Optional[str]]]]:
+        """
+        Détecte les colonnes manquantes par rapport au schéma de référence.
+        
+        Returns:
+            Dict mapping table -> List of (col_name, col_type, default_value, fuzzy_match)
+            where fuzzy_match is the name of an existing column that closely matches, or None
+        """
         missing = {}
         
-        for table, expected_columns in REFERENCE_SCHEMA.items():
+        # Combine REFERENCE_SCHEMA and YAML hints
+        expected_schema = {}
+        
+        # Start with REFERENCE_SCHEMA
+        for table, columns in REFERENCE_SCHEMA.items():
+            expected_schema[table] = {}
+            for col_name, (col_type, default_value) in columns.items():
+                expected_schema[table][col_name] = (col_type, default_value)
+        
+        # Add columns from YAML hints if available
+        if self.schema_hints and "tables" in self.schema_hints:
+            for table, table_info in self.schema_hints["tables"].items():
+                if "expected_columns" not in table_info:
+                    continue
+                
+                if table not in expected_schema:
+                    expected_schema[table] = {}
+                
+                for col_name, col_info in table_info["expected_columns"].items():
+                    if col_name not in expected_schema[table]:
+                        col_type = col_info.get("type", "TEXT")
+                        # Infer default based on type
+                        if col_type == "INTEGER":
+                            default_value = "0"
+                        elif col_type == "REAL":
+                            default_value = "0.0"
+                        else:
+                            default_value = "''"
+                        
+                        expected_schema[table][col_name] = (col_type, default_value)
+        
+        # Now check for missing columns
+        for table, expected_columns in expected_schema.items():
             if table not in existing_schema:
                 self.log(f"Table '{table}' does not exist (will not be created automatically)", "WARNING")
                 continue
@@ -386,20 +575,29 @@ class DatabaseMigrator:
             
             for col_name, (col_type, default_value) in expected_columns.items():
                 if col_name not in existing_cols:
-                    table_missing.append((col_name, col_type, default_value))
+                    # Try fuzzy matching to find a similar column
+                    fuzzy_match = self.fuzzy_match_column(col_name, existing_cols, threshold=0.75)
+                    
+                    if fuzzy_match:
+                        self.log(f"Column '{col_name}' not found in '{table}', but found similar column '{fuzzy_match}'", "INFO")
+                    
+                    table_missing.append((col_name, col_type, default_value, fuzzy_match))
             
             if table_missing:
                 missing[table] = table_missing
         
         return missing
     
-    def apply_migrations(self, conn: sqlite3.Connection, missing_columns: Dict[str, List[Tuple[str, str, str]]]) -> bool:
+    def apply_migrations(self, conn: sqlite3.Connection, missing_columns: Dict[str, List[Tuple[str, str, str, Optional[str]]]]) -> bool:
         """Applique les migrations pour ajouter les colonnes manquantes."""
         if not missing_columns:
             self.log("No missing columns detected. Database is up to date.")
             return True
         
         self.log(f"Found missing columns in {len(missing_columns)} table(s)")
+        
+        # Check if RENAME COLUMN is supported
+        supports_rename = self.check_rename_column_support(conn)
         
         try:
             cursor = conn.cursor()
@@ -411,24 +609,74 @@ class DatabaseMigrator:
             for table, columns in missing_columns.items():
                 self.log(f"Processing table '{table}': {len(columns)} column(s) to add")
                 
-                for col_name, col_type, default_value in columns:
-                    # Construire la commande ALTER TABLE
-                    if default_value is None:
-                        alter_sql = f"ALTER TABLE {table} ADD COLUMN {col_name} {col_type}"
-                    else:
-                        alter_sql = f"ALTER TABLE {table} ADD COLUMN {col_name} {col_type} DEFAULT {default_value}"
-                    
-                    try:
-                        self.log(f"  Adding column: {col_name} ({col_type})")
-                        cursor.execute(alter_sql)
-                        self.log(f"  [OK] Successfully added column '{col_name}' to table '{table}'")
-                    except sqlite3.OperationalError as e:
-                        # La colonne existe peut-être déjà (duplicate column)
-                        error_msg = str(e).lower()
-                        if "duplicate" in error_msg and "column" in error_msg:
-                            self.log(f"  [WARNING] Column '{col_name}' already exists in table '{table}'", "WARNING")
+                for col_name, col_type, default_value, fuzzy_match in columns:
+                    # Case 1: Fuzzy match found - try to rename or copy
+                    if fuzzy_match:
+                        self.log(f"  Column '{col_name}' has fuzzy match '{fuzzy_match}'")
+                        
+                        if supports_rename and fuzzy_match.lower() != col_name.lower():
+                            # Try to rename the column
+                            rename_sql = f"ALTER TABLE {table} RENAME COLUMN {fuzzy_match} TO {col_name}"
+                            
+                            try:
+                                self.log(f"  Attempting to rename '{fuzzy_match}' to '{col_name}'...")
+                                cursor.execute(rename_sql)
+                                self.log(f"  [OK] Successfully renamed column '{fuzzy_match}' to '{col_name}'")
+                                self.column_mappings[f"{table}.{fuzzy_match}"] = f"{table}.{col_name}"
+                                continue
+                            except sqlite3.OperationalError as e:
+                                self.log(f"  [WARNING] RENAME failed: {e}. Will try ADD + COPY instead.", "WARNING")
+                        
+                        # If rename not supported or failed, do ADD + COPY
+                        quoted_col = self.quote_identifier(col_name)
+                        
+                        if default_value is None:
+                            alter_sql = f"ALTER TABLE {table} ADD COLUMN {quoted_col} {col_type}"
                         else:
-                            raise
+                            alter_sql = f"ALTER TABLE {table} ADD COLUMN {quoted_col} {col_type} DEFAULT {default_value}"
+                        
+                        try:
+                            self.log(f"  Adding new column '{col_name}' ({col_type})")
+                            cursor.execute(alter_sql)
+                            
+                            # Copy data from fuzzy_match column to new column
+                            # Quote identifiers in case they're reserved words
+                            quoted_new = self.quote_identifier(col_name)
+                            quoted_old = self.quote_identifier(fuzzy_match)
+                            copy_sql = f"UPDATE {table} SET {quoted_new} = {quoted_old}"
+                            self.log(f"  Copying data from '{fuzzy_match}' to '{col_name}'...")
+                            cursor.execute(copy_sql)
+                            
+                            self.log(f"  [OK] Added column '{col_name}' and copied data from '{fuzzy_match}'")
+                            self.column_mappings[f"{table}.{fuzzy_match}"] = f"{table}.{col_name} (copied)"
+                            
+                        except sqlite3.OperationalError as e:
+                            error_msg = str(e).lower()
+                            if "duplicate" in error_msg and "column" in error_msg:
+                                self.log(f"  [WARNING] Column '{col_name}' already exists", "WARNING")
+                            else:
+                                raise
+                    
+                    # Case 2: No fuzzy match - just add the column
+                    else:
+                        # Quote column name if it's a reserved word
+                        quoted_col = self.quote_identifier(col_name)
+                        
+                        if default_value is None:
+                            alter_sql = f"ALTER TABLE {table} ADD COLUMN {quoted_col} {col_type}"
+                        else:
+                            alter_sql = f"ALTER TABLE {table} ADD COLUMN {quoted_col} {col_type} DEFAULT {default_value}"
+                        
+                        try:
+                            self.log(f"  Adding column: {col_name} ({col_type})")
+                            cursor.execute(alter_sql)
+                            self.log(f"  [OK] Successfully added column '{col_name}' to table '{table}'")
+                        except sqlite3.OperationalError as e:
+                            error_msg = str(e).lower()
+                            if "duplicate" in error_msg and "column" in error_msg:
+                                self.log(f"  [WARNING] Column '{col_name}' already exists in table '{table}'", "WARNING")
+                            else:
+                                raise
             
             # Commit toutes les modifications
             conn.commit()
@@ -480,7 +728,7 @@ class DatabaseMigrator:
         except Exception as e:
             self.log(f"Database optimization warning: {e}", "WARNING")
     
-    def generate_report(self, output_file: str, missing_columns: Dict[str, List[Tuple[str, str, str]]], success: bool):
+    def generate_report(self, output_file: str, missing_columns: Dict[str, List[Tuple[str, str, str, Optional[str]]]], success: bool):
         """Génère un rapport détaillé de la migration."""
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         
@@ -514,10 +762,27 @@ class DatabaseMigrator:
                 f.write("\n## Changes Applied\n\n")
                 for table, columns in missing_columns.items():
                     f.write(f"### Table: `{table}`\n\n")
-                    for col_name, col_type, default_value in columns:
+                    for col_name, col_type, default_value, fuzzy_match in columns:
                         default_str = f" DEFAULT {default_value}" if default_value else ""
                         status_icon = "[OK]" if success else "[FAILED]"
-                        f.write(f"- {status_icon} Column: `{col_name}` ({col_type}{default_str})\n")
+                        
+                        if fuzzy_match:
+                            mapping_key = f"{table}.{fuzzy_match}"
+                            if mapping_key in self.column_mappings:
+                                mapping_action = self.column_mappings[mapping_key]
+                                f.write(f"- {status_icon} Column: `{col_name}` ({col_type}{default_str}) - Mapped from `{fuzzy_match}` ({mapping_action})\n")
+                            else:
+                                f.write(f"- {status_icon} Column: `{col_name}` ({col_type}{default_str}) - Fuzzy match: `{fuzzy_match}`\n")
+                        else:
+                            f.write(f"- {status_icon} Column: `{col_name}` ({col_type}{default_str})\n")
+                    f.write("\n")
+                
+                # Add column mapping summary if any mappings were made
+                if self.column_mappings:
+                    f.write("\n## Column Mappings\n\n")
+                    f.write("The following columns were renamed or had their data copied:\n\n")
+                    for old_ref, new_ref in self.column_mappings.items():
+                        f.write(f"- `{old_ref}` → `{new_ref}`\n")
                     f.write("\n")
             
             if self.errors:
@@ -549,13 +814,17 @@ class DatabaseMigrator:
     def run_migration(self) -> bool:
         """Exécute le processus complet de migration."""
         self.log("=" * 60)
-        self.log("Database Structure Update - Safe Migration")
+        self.log("Database Structure Update - Smart Migration with Fuzzy Matching")
         self.log("=" * 60)
         self.log(f"Database: {self.db_path}")
         
         if not os.path.exists(self.db_path):
             self.log(f"Database file not found: {self.db_path}", "ERROR")
             return False
+        
+        # Étape 0: Charger les schema hints si activé
+        if self.use_yaml_hints:
+            self.load_schema_hints()
         
         # Étape 1: Créer une sauvegarde
         if not self.create_backup():
@@ -658,16 +927,21 @@ def get_latest_migration_report(reports_dir: Optional[str] = None) -> Optional[s
 
 def main():
     """Point d'entrée principal."""
-    parser = argparse.ArgumentParser(description="Safe database structure migration tool")
+    parser = argparse.ArgumentParser(description="Smart database structure migration tool with fuzzy column matching")
     parser.add_argument(
         "--db-path",
         default="association.db",
         help="Path to the database file (default: association.db)"
     )
+    parser.add_argument(
+        "--no-yaml-hints",
+        action="store_true",
+        help="Disable loading schema hints from YAML (use only REFERENCE_SCHEMA)"
+    )
     
     args = parser.parse_args()
     
-    migrator = DatabaseMigrator(args.db_path)
+    migrator = DatabaseMigrator(args.db_path, use_yaml_hints=not args.no_yaml_hints)
     success = migrator.run_migration()
     
     # Afficher le chemin du rapport pour que l'appelant puisse le récupérer
