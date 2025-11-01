@@ -24,7 +24,9 @@ from lib.db_articles import (
 )
 from modules.buvette_inventaire_db import (
     insert_inventaire,
-    list_events
+    update_inventaire,
+    list_events,
+    list_lignes_inventaire
 )
 from db.db import get_connection
 from utils.app_logger import get_logger
@@ -43,15 +45,22 @@ class InventoryLinesDialog(tk.Toplevel):
     - Purchase price management
     """
     
-    def __init__(self, master):
+    def __init__(self, master, edit_inventory=None):
         """
         Initialize the detailed inventory dialog.
         
         Args:
             master: Parent window
+            edit_inventory: Optional dict with inventory data for edit mode (keys: id, date_inventaire, type_inventaire, event_id, commentaire)
         """
         super().__init__(master)
-        self.title("Nouvel inventaire détaillé")
+        self.edit_inventory = edit_inventory
+        self.inventory_id = edit_inventory["id"] if edit_inventory else None
+        
+        if edit_inventory:
+            self.title("Modifier inventaire détaillé")
+        else:
+            self.title("Nouvel inventaire détaillé")
         self.geometry("950x700")
         
         # Variables for header fields
@@ -66,6 +75,10 @@ class InventoryLinesDialog(tk.Toplevel):
         self._create_header_section()
         self._create_lines_section()
         self._create_button_section()
+        
+        # Load existing inventory data if in edit mode
+        if edit_inventory:
+            self._load_inventory_data()
         
     def _create_header_section(self):
         """Create the header section with date, type, event, and comment fields."""
@@ -272,6 +285,50 @@ class InventoryLinesDialog(tk.Toplevel):
             # Open edit dialog with current data
             AddArticleLineDialog(self, self._on_article_added, edit_data=line_data)
     
+    def _load_inventory_data(self):
+        """Load existing inventory data for edit mode."""
+        if not self.edit_inventory:
+            return
+        
+        try:
+            # Load header data
+            self.date_var.set(self.edit_inventory.get("date_inventaire", ""))
+            self.type_var.set(self.edit_inventory.get("type_inventaire", "hors_evenement"))
+            self.comment_var.set(self.edit_inventory.get("commentaire", ""))
+            
+            # Load event if present
+            event_id = self.edit_inventory.get("event_id")
+            if event_id:
+                # Try to find and select the event in combobox
+                for val in self.evt_cb["values"]:
+                    if val and str(event_id) in val:
+                        self.evt_var.set(val)
+                        break
+            
+            # Load inventory lines
+            from modules.buvette_inventaire_db import list_lignes_inventaire
+            lines = list_lignes_inventaire(self.inventory_id)
+            
+            for line in lines:
+                # Get article details
+                article = get_article_by_id(line["article_id"])
+                if article:
+                    article_data = {
+                        "article_id": line["article_id"],
+                        "name": article["name"],
+                        "categorie": article.get("categorie", ""),
+                        "contenance": article.get("contenance", ""),
+                        "quantite": line["quantite"],
+                        "purchase_price": article.get("purchase_price")
+                    }
+                    self.inventory_lines.append(article_data)
+            
+            self._refresh_tree()
+            
+        except Exception as e:
+            logger.error(f"Error loading inventory data: {e}")
+            messagebox.showerror("Erreur", f"Erreur lors du chargement de l'inventaire: {e}")
+    
     def _save(self):
         """Save the inventory to database."""
         # Validate
@@ -301,13 +358,25 @@ class InventoryLinesDialog(tk.Toplevel):
         comment = self.comment_var.get().strip()
         
         try:
-            # Insert inventory header
-            inv_id = insert_inventaire(date_str, evt_id, type_inv, comment)
-            
-            # Insert inventory lines and update stock
             conn = get_connection()
             cursor = conn.cursor()
             
+            if self.inventory_id:
+                # Edit mode: Update existing inventory
+                from modules.buvette_inventaire_db import update_inventaire, delete_ligne_inventaire
+                
+                # Update inventory header
+                update_inventaire(self.inventory_id, date_str, evt_id, type_inv, comment)
+                
+                # Delete existing lines
+                cursor.execute("DELETE FROM buvette_inventaire_lignes WHERE inventaire_id=?", (self.inventory_id,))
+                
+                inv_id = self.inventory_id
+            else:
+                # Insert mode: Create new inventory
+                inv_id = insert_inventaire(date_str, evt_id, type_inv, comment)
+            
+            # Insert/update inventory lines and update stock
             for line in self.inventory_lines:
                 article_id = line["article_id"]
                 quantite = line["quantite"]
@@ -328,9 +397,10 @@ class InventoryLinesDialog(tk.Toplevel):
             conn.commit()
             conn.close()
             
+            action = "modifié" if self.inventory_id else "enregistré"
             messagebox.showinfo(
                 "Succès", 
-                f"Inventaire enregistré avec succès!\n{len(self.inventory_lines)} article(s) traité(s)."
+                f"Inventaire {action} avec succès!\n{len(self.inventory_lines)} article(s) traité(s)."
             )
             self.destroy()
             
