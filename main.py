@@ -274,7 +274,7 @@ class MainApp(tk.Tk):
 
     def create_home_buttons(self):
         for widget in self.winfo_children():
-            if not isinstance(widget, tk.Menu) and widget is not self.status_label:
+            if not isinstance(widget, tk.Menu) and not (hasattr(self, "status_label") and widget is self.status_label):
                 widget.destroy()
         tk.Label(self, text="Les Interactifs des Ecoles", font=("Arial", 18, "bold")).pack(pady=(25,2))
 
