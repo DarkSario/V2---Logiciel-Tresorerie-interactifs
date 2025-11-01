@@ -14,3 +14,7 @@ exports/
 .idea/
 .DS_Store
 *.log
+
+# Database backups and migration reports
+*.db.*.bak
+scripts/migration_report_*.md
