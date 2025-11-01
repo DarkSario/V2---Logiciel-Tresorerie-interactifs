@@ -25,7 +25,7 @@ import shutil
 import argparse
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Tuple, Set
+from typing import Dict, List, Tuple, Set, Optional
 
 
 # Schéma de référence basé sur l'analyse du code et init_db.py
@@ -618,7 +618,7 @@ class DatabaseMigrator:
         return success
 
 
-def get_latest_migration_report(reports_dir: str = None) -> str:
+def get_latest_migration_report(reports_dir: Optional[str] = None) -> Optional[str]:
     """
     Récupère le chemin du dernier rapport de migration généré.
     

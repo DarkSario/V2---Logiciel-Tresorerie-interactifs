@@ -21,7 +21,7 @@ import importlib.util
 import tkinter as tk
 from tkinter import Toplevel, Label, Button, Text, Scrollbar, messagebox
 from pathlib import Path
-from typing import Dict, List, Tuple, Set
+from typing import Dict, List, Tuple, Set, Optional
 
 # Constants
 ERROR_MESSAGE_MAX_LENGTH = 500
@@ -287,7 +287,7 @@ class SchemaCheckDialog(Toplevel):
             self.destroy()
 
 
-def _extract_report_path_from_output(output: str) -> str:
+def _extract_report_path_from_output(output: str) -> Optional[str]:
     """
     Extrait le chemin du rapport depuis la sortie du script de migration.
     
@@ -295,7 +295,7 @@ def _extract_report_path_from_output(output: str) -> str:
         output: Sortie stdout du script
         
     Returns:
-        Chemin du rapport ou None
+        Chemin du rapport ou None si non trouvé
     """
     for line in output.split('\n'):
         if line.startswith('REPORT_PATH:'):
