@@ -601,9 +601,11 @@ class LignesInventaireDialog(tk.Toplevel):
             for row in self.lignes_tree.get_children():
                 self.lignes_tree.delete(row)
             for l in inv_db.list_lignes_inventaire(self.inventaire_id):
+                # Convert Row to dict for safe .get() access
+                l_dict = _row_to_dict(l)
                 # Afficher article_name au lieu de article_id pour meilleure lisibilité
-                article_display = l["article_name"] if l.get("article_name") else f"ID:{l['article_id']}"
-                self.lignes_tree.insert("", "end", iid=l["id"], values=(article_display, l["quantite"], l["commentaire"]))
+                article_display = l_dict["article_name"] if l_dict.get("article_name") else f"ID:{l_dict['article_id']}"
+                self.lignes_tree.insert("", "end", iid=l_dict["id"], values=(article_display, l_dict["quantite"], l_dict["commentaire"]))
         except Exception as e:
             messagebox.showerror("Erreur", handle_exception(e, "Erreur lors de l'affichage des lignes d'inventaire."))
 
