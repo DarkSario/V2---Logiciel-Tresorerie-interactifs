@@ -26,39 +26,9 @@ from modules.buvette_db import (
 import modules.buvette_inventaire_db as inv_db
 from utils.app_logger import get_logger
 from utils.error_handler import handle_exception
+from utils.db_helpers import row_to_dict, row_get_safe
 
 logger = get_logger("buvette_module")
-
-def _row_to_dict(row):
-    """
-    Convert sqlite3.Row to dict for safe .get() access.
-    
-    Args:
-        row: sqlite3.Row object or None
-        
-    Returns:
-        dict or None: Dictionary representation of the row, or None if input is None
-    """
-    if row is None:
-        return None
-    return dict(row)
-
-def _row_get_safe(row, key, default=None):
-    """
-    Safe accessor for sqlite3.Row that returns default value when column is absent.
-    
-    Args:
-        row: sqlite3.Row object
-        key: column name to access
-        default: value to return if column doesn't exist
-        
-    Returns:
-        row[key] if column exists, default otherwise
-    """
-    try:
-        return row[key]
-    except (KeyError, IndexError):
-        return default
 
 class BuvetteModule:
     def __init__(self, master):
@@ -107,7 +77,7 @@ class BuvetteModule:
                 self.articles_tree.delete(row)
             for a in list_articles():
                 # Use safe access helper to tolerate missing columns
-                purchase_price = _row_get_safe(a, "purchase_price")
+                purchase_price = row_get_safe(a, "purchase_price")
                 purchase_price_display = ""
                 if purchase_price is not None:
                     try:
@@ -116,14 +86,14 @@ class BuvetteModule:
                         pass
                 
                 self.articles_tree.insert(
-                    "", "end", iid=_row_get_safe(a, "id", 0),
+                    "", "end", iid=row_get_safe(a, "id", 0),
                     values=(
-                        _row_get_safe(a, "name", ""),
-                        _row_get_safe(a, "categorie", ""),
-                        _row_get_safe(a, "unite", ""),
-                        _row_get_safe(a, "contenance", ""),
+                        row_get_safe(a, "name", ""),
+                        row_get_safe(a, "categorie", ""),
+                        row_get_safe(a, "unite", ""),
+                        row_get_safe(a, "contenance", ""),
                         purchase_price_display,
-                        _row_get_safe(a, "commentaire", "")
+                        row_get_safe(a, "commentaire", "")
                     )
                 )
         except Exception as e:
@@ -601,9 +571,11 @@ class LignesInventaireDialog(tk.Toplevel):
             for row in self.lignes_tree.get_children():
                 self.lignes_tree.delete(row)
             for l in inv_db.list_lignes_inventaire(self.inventaire_id):
+                # Convert Row to dict for safe .get() access
+                ligne_dict = row_to_dict(l)
                 # Afficher article_name au lieu de article_id pour meilleure lisibilité
-                article_display = l["article_name"] if l.get("article_name") else f"ID:{l['article_id']}"
-                self.lignes_tree.insert("", "end", iid=l["id"], values=(article_display, l["quantite"], l["commentaire"]))
+                article_display = ligne_dict["article_name"] if ligne_dict.get("article_name") else f"ID:{ligne_dict['article_id']}"
+                self.lignes_tree.insert("", "end", iid=ligne_dict["id"], values=(article_display, ligne_dict["quantite"], ligne_dict["commentaire"]))
         except Exception as e:
             messagebox.showerror("Erreur", handle_exception(e, "Erreur lors de l'affichage des lignes d'inventaire."))
 

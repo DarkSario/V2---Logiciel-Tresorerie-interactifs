@@ -4,6 +4,7 @@ from datetime import date
 import modules.buvette_inventaire_db as db
 import modules.buvette_db as buvette_db
 from utils.app_logger import get_logger
+from utils.db_helpers import row_to_dict, rows_to_dicts
 
 logger = get_logger("buvette_inventaire_dialogs")
 
@@ -168,6 +169,9 @@ class InventaireDialog(tk.Toplevel):
                 self.destroy()
                 return
             
+            # Convert Row to dict for safe .get() access
+            inv = row_to_dict(inv)
+            
             # Load header data
             self.date_var.set(inv["date_inventaire"] or "")
             self.type_var.set(inv["type_inventaire"] or "")
@@ -186,6 +190,8 @@ class InventaireDialog(tk.Toplevel):
                     try:
                         article = buvette_db.get_article_by_id(article_id)
                         if article:
+                            # Convert Row to dict for safe .get() access
+                            article = row_to_dict(article)
                             self.lines_tree.insert("", "end", values=(
                                 article_id,
                                 article["name"],
@@ -340,6 +346,8 @@ class AddLineDialog(tk.Toplevel):
         self.article_combo = ttk.Combobox(frame, textvariable=self.article_var, width=40, state="readonly")
         try:
             articles = buvette_db.list_articles()
+            # Convert Rows to dicts for safe .get() access
+            articles = rows_to_dicts(articles)
             self.article_combo["values"] = [
                 f"{a['id']} - {a['name']} ({a.get('contenance', '')})" for a in articles
             ]
@@ -445,6 +453,8 @@ class AddLineDialog(tk.Toplevel):
                     messagebox.showerror("Erreur", "Article introuvable.")
                     return
                 
+                # Convert Row to dict for safe .get() access
+                article = row_to_dict(article)
                 name = article["name"]
                 categorie = article.get("categorie", "")
                 contenance = article.get("contenance", "")
