@@ -222,13 +222,13 @@ class BuvetteModule:
 
         btn_frame = tk.Frame(frame)
         btn_frame.pack(side=tk.RIGHT, fill=tk.Y, padx=5)
-        tk.Button(btn_frame, text="Ajouter", command=self.add_inventaire).pack(fill=tk.X, pady=2)
+        # Removed redundant "Ajouter" button - use "Nouvel inventaire détaillé" instead
         tk.Button(btn_frame, text="Modifier", command=self.edit_inventaire).pack(fill=tk.X, pady=2)
         tk.Button(btn_frame, text="Supprimer", command=self.del_inventaire).pack(fill=tk.X, pady=2)
         tk.Button(btn_frame, text="Voir lignes", command=self.show_lignes_inventaire).pack(fill=tk.X, pady=2)
         # Separator
         ttk.Separator(btn_frame, orient='horizontal').pack(fill=tk.X, pady=10)
-        # New detailed inventory button
+        # New detailed inventory button (replaces simple "Ajouter")
         tk.Button(btn_frame, text="Nouvel inventaire\ndétaillé", command=self.add_detailed_inventaire, bg="#4CAF50", fg="white").pack(fill=tk.X, pady=2)
 
     def refresh_inventaires(self):
