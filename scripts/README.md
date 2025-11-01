@@ -2,50 +2,67 @@
 
 Ce répertoire contient des scripts utilitaires pour la maintenance et la migration de la base de données de l'application.
 
-## Scripts Disponibles
+## Smart Migrations System
 
-### 1. `analyze_modules_columns.py`
+Le système de migrations intelligentes fournit une gestion de schéma de base de données sûre et automatisée.
 
-Script d'analyse du code pour détecter les tables et colonnes SQL utilisées dans l'application.
+### 1. `analyze_modules_columns.py` - Analyseur SQL Strict
 
-**Fonctionnalités:**
-- Parcourt automatiquement tous les fichiers Python dans `modules/`, `ui/`, `scripts/`, `lib/`, et `db/`
-- Extrait les requêtes SQL (SELECT, INSERT, UPDATE, ALTER TABLE, CREATE TABLE)
-- Identifie les références aux tables et colonnes
-- Génère un rapport détaillé au format Markdown
+Script d'analyse stricte du code pour détecter les tables et colonnes SQL utilisées dans l'application.
+
+**Fonctionnalités clés:**
+- **Validation stricte** : Utilise le pattern regex `^[A-Za-z_][A-Za-z0-9_]*$` pour valider les identifiants SQL
+- **Extraction précise** : N'extrait QUE depuis les patterns SQL (INSERT INTO, UPDATE SET, SELECT FROM, CREATE TABLE)
+- **Évite les faux positifs** : Ignore les tokens de code, appels de fonction, et texte UI
+- **Inférence de types** : Détecte automatiquement les types de colonnes (TEXT, INTEGER, REAL, DATE) basés sur les noms
+- **Rapporte les invalides** : Collecte et rapporte les identifiants invalides trouvés
 
 **Usage:**
 ```bash
 python scripts/analyze_modules_columns.py
 ```
 
-**Sortie:**
-- `reports/SQL_SCHEMA_HINTS.md` - Rapport complet avec :
+**Sorties:**
+- `reports/SQL_SCHEMA_HINTS.md` - Rapport lisible en markdown avec :
   - Résumé par table (nombre de colonnes et fichiers)
-  - Détails des colonnes détectées pour chaque table
+  - Détails des colonnes détectées avec types inférés
   - Liste des fichiers où chaque table est référencée
+  - Section des identifiants invalides ignorés
+
+- `db/schema_hints.yaml` - Manifest machine-readable au format simple :
+  ```yaml
+  schema_version: "1.0"
+  tables:
+    table_name:
+      expected_columns:
+        column_name:
+          type: TEXT|INTEGER|REAL|DATE
+          inferred: true
+  manual_overrides: {}
+  ```
 
 **Cas d'usage:**
 - Documentation du schéma de base de données
+- Génération de hints pour la migration
+- Détection des colonnes manquantes
 - Audit des dépendances SQL
-- Préparation des migrations
-- Détection des tables/colonnes non utilisées
 
 ---
 
-### 2. `update_db_structure.py`
+### 2. `update_db_structure.py` - Migrateur Intelligent de Base de Données
 
-Script de migration sûre de la structure de base de données.
+Script de migration robuste avec matching fuzzy et renommage intelligent de colonnes.
 
-**Fonctionnalités:**
-- Compare le schéma de référence avec le schéma actuel de la base
-- Détecte automatiquement les colonnes manquantes
-- Crée une sauvegarde timestampée avant toute modification
-- Exécute les migrations dans une transaction
-- Restaure automatiquement la sauvegarde en cas d'erreur
-- Active le mode WAL pour de meilleures performances
-- Optimise les paramètres PRAGMA
-- Génère un rapport détaillé de migration
+**Fonctionnalités intelligentes:**
+- **Chargement de hints YAML** : Charge `db/schema_hints.yaml` ou exécute l'analyseur en fallback
+- **Validation stricte** : Valide tous les noms de colonnes attendus (ignore et rapporte les invalides)
+- **Fuzzy matching** : Détecte les colonnes similaires (ex: `prnom` → `prenom`) avec seuil configurable (0.75 par défaut)
+- **Matching insensible à la casse** : Trouve `email` même si la colonne s'appelle `EMail`
+- **Renommage intelligent** : Utilise `ALTER TABLE RENAME COLUMN` si supporté (SQLite 3.25+)
+- **Fallback ADD+COPY** : Pour versions anciennes ou échec de rename, ajoute colonne et copie les données
+- **Sauvegardes timestampées** : Crée toujours `{database}.YYYYMMDD_HHMMSS.bak`
+- **Transactions sûres** : Rollback automatique en cas d'erreur
+- **Optimisation** : Active WAL mode et optimise les pragmas SQLite
 
 **Usage:**
 ```bash
@@ -54,14 +71,18 @@ python scripts/update_db_structure.py
 
 # Migration d'une autre base
 python scripts/update_db_structure.py --db-path chemin/vers/base.db
+
+# Désactiver les hints YAML (utiliser seulement REFERENCE_SCHEMA)
+python scripts/update_db_structure.py --no-yaml-hints
 ```
 
 **Options:**
 - `--db-path PATH` : Chemin vers la base de données à migrer (défaut: `association.db`)
+- `--no-yaml-hints` : Désactiver le chargement des hints YAML
 
 **Sorties:**
 - `[db-file].YYYYMMDD_HHMMSS.bak` - Sauvegarde timestampée de la base
-- `scripts/migration_report_YYYYMMDD_HHMMSS.md` - Rapport détaillé de migration
+- `reports/migration_report_{success|failed}_YYYYMMDD_HHMMSS.md` - Rapport détaillé de migration
 
 **Format du rapport de migration:**
 ```markdown
@@ -77,20 +98,32 @@ python scripts/update_db_structure.py --db-path chemin/vers/base.db
 - Total columns added: 11
 
 ## Changes Applied
+### Table: `membres`
+- [OK] Column: `prenom` (TEXT DEFAULT '') - Mapped from `prnom` (membres.prnom)
+- [OK] Column: `email` (TEXT DEFAULT '') - Mapped from `emial` (membres.emial)
+
 ### Table: `config`
-- Added column: `but_asso` (TEXT DEFAULT '')
-- Added column: `cloture` (INTEGER DEFAULT 0)
-...
+- [OK] Column: `but_asso` (TEXT DEFAULT '')
+- [OK] Column: `cloture` (INTEGER DEFAULT 0)
+
+## Column Mappings
+- `membres.prnom` → `membres.prenom`
+- `membres.emial` → `membres.email`
+
+## Skipped Invalid Identifiers
+- `table_name.invalid-column` (does not match SQL identifier pattern)
 
 ## Migration Log
 [Logs détaillés de toutes les opérations]
 ```
 
-**Sécurité:**
-- **Sauvegarde automatique** : Une copie de la base est créée avant toute modification
-- **Transactions** : Toutes les modifications sont groupées dans une transaction
-- **Rollback automatique** : En cas d'erreur, la transaction est annulée
+**Mécanismes de sécurité:**
+- **Sauvegarde automatique** : Une copie timestampée de la base est créée avant toute modification
+- **Validation stricte** : Seuls les identifiants SQL valides (`^[A-Za-z_][A-Za-z0-9_]*$`) sont traités
+- **Transactions** : Toutes les modifications sont groupées dans une transaction avec BEGIN/COMMIT
+- **Rollback automatique** : En cas d'erreur, la transaction est annulée automatiquement
 - **Restauration** : La sauvegarde est restaurée automatiquement si la migration échoue
+- **Préservation des données** : Le fuzzy matching et RENAME/COPY préservent les données existantes
 - **Pas de perte de données** : Les colonnes ajoutées ont des valeurs par défaut appropriées
 
 **Schéma de référence:**
@@ -185,19 +218,60 @@ Cette option :
 
 ---
 
+## Exemples de Migration
+
+### Exemple 1: Renommage de colonne avec fuzzy matching
+
+**Scénario:** Le code attend `prenom`, mais la base contient `prnom`
+
+**Action (SQLite 3.25+):**
+```sql
+ALTER TABLE membres RENAME COLUMN prnom TO prenom
+```
+
+**Résultat:** Colonne renommée, données préservées, pas de duplication
+
+### Exemple 2: Ajout avec copie de données
+
+**Scénario:** Colonne `email` attendue, colonne similaire `emial` existe, mais RENAME pas supporté
+
+**Action:**
+```sql
+ALTER TABLE membres ADD COLUMN email TEXT DEFAULT '';
+UPDATE membres SET email = emial;
+```
+
+**Résultat:** Nouvelle colonne ajoutée, données copiées de la colonne similaire
+
+### Exemple 3: Ajout simple
+
+**Scénario:** Colonne `description` attendue, aucune colonne similaire n'existe
+
+**Action:**
+```sql
+ALTER TABLE events ADD COLUMN description TEXT DEFAULT '';
+```
+
+**Résultat:** Nouvelle colonne ajoutée avec type inféré et valeur par défaut
+
+---
+
 ## Tests
 
 Des tests unitaires complets sont disponibles :
 
 ```bash
-# Tester l'analyseur de modules
+# Tester l'analyseur de modules (extraction SQL stricte)
 python tests/test_analyze_modules.py
 
-# Tester le système de migration
+# Tester le système de migration intelligente (fuzzy matching, renommage)
+python tests/test_smart_migration.py
+
+# Tester les migrations de base (legacy)
 python tests/test_database_migration.py
 
 # Exécuter tous les tests
-pytest tests/test_analyze_modules.py tests/test_database_migration.py
+pytest tests/test_analyze_modules.py tests/test_smart_migration.py tests/test_database_migration.py
 ```
 
 ---
