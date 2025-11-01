@@ -30,7 +30,6 @@ from modules.buvette_inventaire_db import (
 )
 from db.db import get_connection
 from utils.app_logger import get_logger
-from utils.db_helpers import row_to_dict
 from modules.db_row_utils import _row_to_dict, _rows_to_dicts
 from modules.inventory_lines_dialog import load_inventory_lines
 

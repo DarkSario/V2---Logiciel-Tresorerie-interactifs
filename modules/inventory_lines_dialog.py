@@ -53,6 +53,7 @@ def load_inventory_lines(inventaire_id: int) -> List[Dict[str, Any]]:
         >>> except Exception as e:
         >>>     logger.error(f"Failed to load inventory: {e}")
     """
+    raw_rows = None  # Initialize for error reporting scope
     try:
         # Fetch raw rows from database
         logger.info(f"Loading inventory lines for inventaire_id={inventaire_id}")
@@ -73,7 +74,7 @@ def load_inventory_lines(inventaire_id: int) -> List[Dict[str, Any]]:
         logger.error(f"Error loading inventory lines for inventaire_id={inventaire_id}: {e}", exc_info=True)
         
         # Write detailed error report
-        _write_error_report(inventaire_id, e, raw_rows if 'raw_rows' in locals() else None)
+        _write_error_report(inventaire_id, e, raw_rows)
         
         # Re-raise the exception so callers can handle it
         raise

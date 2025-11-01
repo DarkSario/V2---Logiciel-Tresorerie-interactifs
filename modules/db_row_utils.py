@@ -4,6 +4,11 @@ Database row utility functions for safe sqlite3.Row conversions.
 This module provides utility functions to safely convert sqlite3.Row objects
 to dictionaries, enabling the use of .get() method for optional field access.
 
+Note: This module duplicates functionality from utils.db_helpers for module-specific
+use. The underscore prefix (_row_to_dict, _rows_to_dicts) indicates these are
+internal utilities specific to the modules/ directory. The utils.db_helpers versions
+(row_to_dict, rows_to_dicts) remain available for general use throughout the codebase.
+
 Functions:
     _row_to_dict: Convert a single sqlite3.Row to dict
     _rows_to_dicts: Convert a list of sqlite3.Row objects to list of dicts

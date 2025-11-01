@@ -4,7 +4,6 @@ from datetime import date
 import modules.buvette_inventaire_db as db
 import modules.buvette_db as buvette_db
 from utils.app_logger import get_logger
-from utils.db_helpers import row_to_dict, rows_to_dicts
 from modules.db_row_utils import _row_to_dict, _rows_to_dicts
 from modules.inventory_lines_dialog import load_inventory_lines
 

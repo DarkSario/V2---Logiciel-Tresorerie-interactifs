@@ -99,8 +99,9 @@ class TestInventoryLinesLoader(unittest.TestCase):
             for report in error_reports:
                 try:
                     os.unlink(report)
-                except:
-                    pass
+                except (OSError, IOError) as e:
+                    # Log but don't fail test if cleanup fails
+                    print(f"Warning: Could not remove test report {report}: {e}")
     
     def test_load_inventory_lines_returns_dicts(self):
         """Test that load_inventory_lines returns a list of dicts."""
