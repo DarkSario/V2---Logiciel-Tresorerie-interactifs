@@ -222,7 +222,7 @@ class BuvetteModule:
 
         btn_frame = tk.Frame(frame)
         btn_frame.pack(side=tk.RIGHT, fill=tk.Y, padx=5)
-        # Removed redundant "Ajouter" button - use "Nouvel inventaire détaillé" instead
+        # Removed simple 'Ajouter' button - functionality replaced by detailed inventory dialog below
         tk.Button(btn_frame, text="Modifier", command=self.edit_inventaire).pack(fill=tk.X, pady=2)
         tk.Button(btn_frame, text="Supprimer", command=self.del_inventaire).pack(fill=tk.X, pady=2)
         tk.Button(btn_frame, text="Voir lignes", command=self.show_lignes_inventaire).pack(fill=tk.X, pady=2)

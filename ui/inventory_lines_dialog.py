@@ -645,8 +645,8 @@ class AddArticleLineDialog(tk.Toplevel):
                         f"Un article avec le nom '{article_name}' existe déjà. Voulez-vous l'utiliser?"
                     ):
                         article_id = existing_dict["id"]
-                        article_categorie = existing_dict.get("categorie", "") or ""
-                        article_contenance = existing_dict.get("contenance", "") or ""
+                        article_categorie = existing_dict.get("categorie", "")
+                        article_contenance = existing_dict.get("contenance", "")
                     else:
                         return
                 else:
