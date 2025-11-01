@@ -144,12 +144,14 @@ Invalid identifiers are:
 
 **Examples:**
 - ✓ Valid: `user_id`, `firstName`, `_temp`, `column123`
-- ✗ Invalid: `user-id`, `123column`, `user.name`, `select`
+- ✗ Invalid: `user-id`, `123column`, `user.name`
+- ⚠ Reserved words (like `select`, `order`, `table`) are valid but will be quoted automatically
 
 ### Safety Mechanisms
 
 1. **Backup Before Migration**
    - Timestamped backup created automatically
+   - Format: `{database_name}.YYYYMMDD_HHMMSS.bak`
    - Original file never modified without backup
    - Backup location logged in report
 
@@ -249,7 +251,7 @@ Detailed migration report including:
 
 ### Issue: Invalid identifiers detected
 
-**Solution:** Check SQL_SCHEMA_HINTS.md "Identifiants Invalides Ignores" section. These are typically:
+**Solution:** Check SQL_SCHEMA_HINTS.md "Identifiants Invalides Ignorés" section. These are typically:
 - SQL keywords without proper quoting
 - Typos in SQL queries
 - UI text mistakenly captured
@@ -300,9 +302,10 @@ self.type_patterns = {
 
 ### Adjusting Fuzzy Threshold
 
-Change threshold when creating DatabaseMigrator:
+To change the fuzzy matching threshold, modify the `DatabaseMigrator` initialization in `update_db_structure.py`:
 ```python
-migrator = DatabaseMigrator(db_path, fuzzy_threshold=0.8)
+# In the main() function, change:
+migrator = DatabaseMigrator(args.db_path, use_yaml_hints=not args.no_yaml_hints, fuzzy_threshold=0.8)
 ```
 
 Lower values = stricter matching (fewer false positives)
@@ -334,9 +337,9 @@ fi
 ## Requirements
 
 - Python 3.9+
-- SQLite 3.25+ (for RENAME COLUMN support)
-- No external dependencies for core functionality
-- Optional: PyYAML or compatible YAML loader
+- SQLite 3.25+ recommended (for RENAME COLUMN support; older versions work but will use ADD+COPY instead)
+- Core functionality has no external dependencies (uses standard library)
+- Optional: PyYAML for YAML loading (falls back to compat_yaml module if PyYAML not available)
 
 ## License
 

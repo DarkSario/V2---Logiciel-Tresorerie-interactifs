@@ -95,13 +95,14 @@ Action: ALTER TABLE categories RENAME COLUMN parent_id TO parent
 Result: ✓ Column renamed, data preserved
 ```
 
-**Example 2: Add Column with Data Copy**
+**Example 2: Add Column with Data Copy (or Rename if supported)**
 ```
 Table: stock
-Found: categorie_id (similar)
+Found: categorie_id (existing, fuzzy match)
 Expected: categorie
-Action: ADD categorie + COPY data from categorie_id
-Result: ✓ New column added with existing data
+Action: RENAME categorie_id TO categorie (SQLite 3.25+)
+Result: ✓ Column renamed, data preserved
+Note: If RENAME not supported, would ADD + COPY instead
 ```
 
 **Example 3: Add New Column**
