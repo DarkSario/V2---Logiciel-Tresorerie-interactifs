@@ -19,3 +19,4 @@ exports/
 *.db.*.bak
 scripts/migration_report_*.md
 reports/migration_report_*.md
+reports/inventory_error_*.txt
