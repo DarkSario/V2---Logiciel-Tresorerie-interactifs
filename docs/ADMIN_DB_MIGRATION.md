@@ -412,12 +412,53 @@ Ce schéma est la source de vérité pour les migrations. Toute nouvelle colonne
    - Deuxième rapport indique "No missing columns detected"
    - Aucune erreur levée sur les colonnes déjà existantes
 
+## Test 6 : Buvette avec colonne manquante (Safe Access)
+
+**Objectif** : Vérifier que le module buvette tolère les colonnes manquantes grâce au helper `_row_get_safe()`
+
+**Procédure** :
+1. Créer une base test avec table buvette_articles sans la colonne `purchase_price`:
+   ```bash
+   sqlite3 test.db "CREATE TABLE buvette_articles (id INTEGER PRIMARY KEY, name TEXT, categorie TEXT, unite TEXT, contenance TEXT, commentaire TEXT);"
+   sqlite3 test.db "INSERT INTO buvette_articles (name, categorie) VALUES ('Test Article', 'Boissons');"
+   ```
+2. Lancer l'application et ouvrir le module Buvette
+3. **Résultat attendu** :
+   - La liste d'articles s'affiche correctement
+   - Aucune erreur IndexError
+   - Colonne "Prix achat/unité" reste vide pour les articles sans prix
+   - Message d'erreur informatif si échec (avec suggestion de MAJ du schéma)
+
+### Test 7 : Modification d'inventaire détaillé
+
+**Objectif** : Vérifier que le bouton "Modifier" ouvre le dialogue détaillé en mode édition
+
+**Procédure** :
+1. Créer un inventaire détaillé avec plusieurs articles via "Nouvel inventaire détaillé"
+2. Fermer le dialogue et sélectionner l'inventaire créé dans la liste
+3. Cliquer sur le bouton "Modifier"
+4. **Résultat attendu** :
+   - Dialogue "Modifier inventaire détaillé" s'ouvre
+   - Champs header (date, type, commentaire) sont pré-remplis
+   - Liste d'articles est pré-chargée avec quantités actuelles
+   - Modifications possibles : ajouter/supprimer articles, modifier quantités
+   - Au clic sur "Enregistrer" : inventaire mis à jour (pas de duplication)
+   - Message de confirmation : "Inventaire modifié avec succès!"
+
 ## Support
 
 Pour toute question ou problème, consulter :
 - Les rapports de migration dans `reports/migration_report_*.md`
 - L'analyse du schéma dans `reports/SQL_SCHEMA_HINTS.md`
 - Les logs de l'application
+
+## Historique des Versions
+
+### Version 2.1 (2025-11-01)
+- **Buvette safe access** : ajout du helper `_row_get_safe()` pour tolérer les colonnes manquantes
+- **Inventaire edit mode** : bouton "Modifier" ouvre désormais le dialogue détaillé avec données pré-chargées
+- **Support UPDATE inventaires** : `InventoryLinesDialog` supporte maintenant les modes INSERT et UPDATE
+- **Gestion des lignes** : suppression des anciennes lignes et ré-insertion des nouvelles lors de la modification
 
 ## Historique des Versions
 

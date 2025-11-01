@@ -29,6 +29,23 @@ from utils.error_handler import handle_exception
 
 logger = get_logger("buvette_module")
 
+def _row_get_safe(row, key, default=None):
+    """
+    Safe accessor for sqlite3.Row that returns default value when column is absent.
+    
+    Args:
+        row: sqlite3.Row object
+        key: column name to access
+        default: value to return if column doesn't exist
+        
+    Returns:
+        row[key] if column exists, default otherwise
+    """
+    try:
+        return row[key]
+    except (KeyError, IndexError):
+        return default
+
 class BuvetteModule:
     def __init__(self, master):
         self.top = tk.Toplevel(master)
@@ -75,15 +92,29 @@ class BuvetteModule:
             for row in self.articles_tree.get_children():
                 self.articles_tree.delete(row)
             for a in list_articles():
+                # Use safe access helper to tolerate missing columns
+                purchase_price = _row_get_safe(a, "purchase_price")
                 purchase_price_display = ""
-                if "purchase_price" in a and a["purchase_price"] is not None:
-                    purchase_price_display = f"{a['purchase_price']:.2f}"
+                if purchase_price is not None:
+                    try:
+                        purchase_price_display = f"{float(purchase_price):.2f}"
+                    except (ValueError, TypeError):
+                        pass
+                
                 self.articles_tree.insert(
-                    "", "end", iid=a["id"],
-                    values=(a["name"], a["categorie"], a["unite"], a["contenance"] if a["contenance"] is not None else "", purchase_price_display, a["commentaire"])
+                    "", "end", iid=_row_get_safe(a, "id", 0),
+                    values=(
+                        _row_get_safe(a, "name", ""),
+                        _row_get_safe(a, "categorie", ""),
+                        _row_get_safe(a, "unite", ""),
+                        _row_get_safe(a, "contenance", ""),
+                        purchase_price_display,
+                        _row_get_safe(a, "commentaire", "")
+                    )
                 )
         except Exception as e:
-            messagebox.showerror("Erreur", handle_exception(e, "Erreur lors de l'affichage des articles."))
+            logger.exception("Error refreshing articles list")
+            messagebox.showerror("Erreur", handle_exception(e, "Erreur lors de l'affichage des articles. Vérifiez que la structure de la base de données est à jour."))
 
     def add_article(self):
         ArticleDialog(self.top, self.refresh_articles)
@@ -213,6 +244,7 @@ class BuvetteModule:
         InventaireDialog(self.top, self.refresh_inventaires)
 
     def edit_inventaire(self):
+        """Open the detailed inventory dialog for editing an existing inventory."""
         sel = self.inventaires_tree.focus()
         if sel:
             inv = None
@@ -221,7 +253,14 @@ class BuvetteModule:
                     inv = i
                     break
             if inv:
-                InventaireDialog(self.top, self.refresh_inventaires, inv)
+                # Open detailed dialog with edit mode
+                from ui.inventory_lines_dialog import InventoryLinesDialog
+                dialog = InventoryLinesDialog(self.top, edit_inventory=inv)
+                # Make dialog modal and wait for it to close before refreshing
+                dialog.grab_set()
+                self.top.wait_window(dialog)
+                # Refresh inventory list after dialog closes
+                self.refresh_inventaires()
         else:
             messagebox.showwarning("Sélection", "Sélectionner un inventaire à modifier.")
 
