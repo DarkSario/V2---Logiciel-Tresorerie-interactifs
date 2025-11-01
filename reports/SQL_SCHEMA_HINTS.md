@@ -38,7 +38,7 @@ Il sert de référence pour les migrations et la maintenance du schéma de base 
 - **membres**: 40 colonnes, référencée dans 3 fichier(s)
 - **mouvements_stock**: 9 colonnes, référencée dans 1 fichier(s)
 - **retrocessions_ecoles**: 100 colonnes, référencée dans 2 fichier(s)
-- **sqlite_master**: 8 colonnes, référencée dans 2 fichier(s)
+- **sqlite_master**: 13 colonnes, référencée dans 3 fichier(s)
 - **stock**: 38 colonnes, référencée dans 5 fichier(s)
 - **tree**: 44 colonnes, référencée dans 0 fichier(s)
 - **valeurs_modeles_colonnes**: 2 colonnes, référencée dans 3 fichier(s)
@@ -1290,17 +1290,23 @@ Il sert de référence pour les migrations et la maintenance du schéma de base 
 
 - `__name__`
 - `columns`
+- `cursor`
 - `error_msg`
+- `existing_cols`
+- `missing`
 - `name`
 - `success`
 - `successfully`
 - `table_exists`
+- `table_missing`
+- `tables`
 - `type`
 
 **Référencée dans les fichiers:**
 
 - `db/db.py`
 - `scripts/migrate_add_purchase_price.py`
+- `scripts/update_db_structure.py`
 
 ---
 
