@@ -33,22 +33,19 @@ from utils.app_logger import get_logger
 
 logger = get_logger("inventory_lines_dialog")
 
-# Debug print to confirm module loaded
-logger.debug("inventory_lines_dialog module loaded successfully")
-
 def _row_to_dict(row):
     """
     Convert sqlite3.Row to dict for safe .get() access.
     
     Args:
-        row: sqlite3.Row object
+        row: sqlite3.Row object or None
         
     Returns:
-        dict: Dictionary representation of the row
+        dict or None: Dictionary representation of the row, or None if input is None
     """
     if row is None:
         return None
-    return {key: row[key] for key in row.keys()}
+    return dict(row)
 
 class InventoryLinesDialog(tk.Toplevel):
     """
