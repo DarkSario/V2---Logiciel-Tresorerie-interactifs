@@ -4,7 +4,8 @@ from datetime import date
 import modules.buvette_inventaire_db as db
 import modules.buvette_db as buvette_db
 from utils.app_logger import get_logger
-from utils.db_helpers import row_to_dict, rows_to_dicts
+from modules.db_row_utils import _row_to_dict, _rows_to_dicts
+from modules.inventory_lines_dialog import load_inventory_lines
 
 logger = get_logger("buvette_inventaire_dialogs")
 
@@ -67,6 +68,8 @@ class InventaireDialog(tk.Toplevel):
         self.evt_cb = ttk.Combobox(frm, textvariable=self.evt_var, width=40, state="readonly")
         try:
             events = db.list_events()
+            # Convert Row objects to dicts for safe access
+            events = _rows_to_dicts(events)
             self.evt_cb["values"] = [""] + [f"{r['id']} - {r['name']}" for r in events]
         except Exception as e:
             logger.warning(f"Could not load events: {e}")
@@ -170,7 +173,7 @@ class InventaireDialog(tk.Toplevel):
                 return
             
             # Convert Row to dict for safe .get() access
-            inv = row_to_dict(inv)
+            inv = _row_to_dict(inv)
             
             # Load header data
             self.date_var.set(inv["date_inventaire"] or "")
@@ -179,22 +182,29 @@ class InventaireDialog(tk.Toplevel):
             if inv.get("event_id"):
                 self.evt_var.set(f"{inv['event_id']} - {inv.get('event_name', '')}")
             
-            # Load lines
+            # Load lines using robust helper function with error reporting
             try:
-                lignes = db.list_lignes_inventaire(self.inventaire_id)
+                # Use load_inventory_lines which converts Rows to dicts and handles errors
+                lignes = load_inventory_lines(self.inventaire_id)
+                
                 for ligne in lignes:
-                    article_id = ligne["article_id"]
-                    quantite = ligne["quantite"]
+                    # Now ligne is a dict, safe to use .get()
+                    article_id = ligne.get("article_id")
+                    quantite = ligne.get("quantite", 0)
+                    
+                    if not article_id:
+                        logger.warning(f"Skipping line with missing article_id: {ligne}")
+                        continue
                     
                     # Get article details
                     try:
                         article = buvette_db.get_article_by_id(article_id)
                         if article:
                             # Convert Row to dict for safe .get() access
-                            article = row_to_dict(article)
+                            article = _row_to_dict(article)
                             self.lines_tree.insert("", "end", values=(
                                 article_id,
-                                article["name"],
+                                article.get("name", ""),
                                 article.get("categorie", ""),
                                 article.get("contenance", ""),
                                 quantite
@@ -206,8 +216,14 @@ class InventaireDialog(tk.Toplevel):
                             article_id, f"Article #{article_id}", "", "", quantite
                         ))
             except Exception as e:
-                logger.warning(f"Could not load inventory lines: {e}")
-                messagebox.showwarning("Avertissement", f"Impossible de charger les lignes : {e}")
+                # Error already logged and reported by load_inventory_lines
+                logger.error(f"Failed to load inventory lines: {e}")
+                messagebox.showerror(
+                    "Erreur", 
+                    f"Impossible de charger les lignes d'inventaire.\n"
+                    f"Un rapport d'erreur détaillé a été généré dans reports/\n\n"
+                    f"Erreur: {e}"
+                )
         
         except Exception as e:
             logger.error(f"Error loading inventory: {e}")
@@ -454,7 +470,7 @@ class AddLineDialog(tk.Toplevel):
                     return
                 
                 # Convert Row to dict for safe .get() access
-                article = row_to_dict(article)
+                article = _row_to_dict(article)
                 name = article["name"]
                 categorie = article.get("categorie", "")
                 contenance = article.get("contenance", "")
