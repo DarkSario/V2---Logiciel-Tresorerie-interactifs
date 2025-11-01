@@ -25,6 +25,18 @@ import yaml
 class SQLAnalyzer:
     """Analyseur de code Python pour extraire les références SQL."""
     
+    # Common false positives to filter out (Python/Tkinter keywords, UI elements, etc.)
+    # This can be extended as needed when new false positives are discovered
+    FALSE_POSITIVE_COLUMNS = {
+        'padx', 'pady', 'row', 'column', 'text', 'values', 'state', 'side', 'fill', 
+        'expand', 'width', 'height', 'command', 'textvariable', 'title', 'header',
+        'filetypes', 'defaultextension', 'filepath', 'conn', 'cursor', 'df', 'params',
+        'table', 'before', 'after', 'table_matches', 'var', 'on_save', 'CREATE',
+    }
+    
+    # False positive table names to filter out
+    FALSE_POSITIVE_TABLES = {'CREATE', 'for', 'tree', 'sqlite_master'}
+    
     def __init__(self, repo_root):
         self.repo_root = Path(repo_root)
         self.table_columns = defaultdict(lambda: {"columns": set(), "files": set(), "column_types": {}})
@@ -47,14 +59,6 @@ class SQLAnalyzer:
         
         # Pattern pour les références de colonnes dans WHERE, SET, etc.
         self.column_ref_pattern = r'\b(\w+)\s*=\s*[?:]'
-        
-        # Common false positives to filter out (Python/Tkinter keywords, UI elements, etc.)
-        self.false_positive_columns = {
-            'padx', 'pady', 'row', 'column', 'text', 'values', 'state', 'side', 'fill', 
-            'expand', 'width', 'height', 'command', 'textvariable', 'title', 'header',
-            'filetypes', 'defaultextension', 'filepath', 'conn', 'cursor', 'df', 'params',
-            'table', 'before', 'after', 'table_matches', 'var', 'on_save', 'CREATE',
-        }
         
         # Patterns pour inférer les types de colonnes
         self.type_patterns = {
@@ -110,11 +114,22 @@ class SQLAnalyzer:
     
     def _add_column_to_table(self, table, column, infer_type=True):
         """Ajoute une colonne à une table et infère son type si nécessaire."""
+        # Skip if no column name provided
+        if not column:
+            return
+        
         # Filter out false positives
-        if column and column.lower() not in self.false_positive_columns and column not in self.table_columns[table]["columns"]:
-            self.table_columns[table]["columns"].add(column)
-            if infer_type and column not in self.table_columns[table]["column_types"]:
-                self.table_columns[table]["column_types"][column] = self.infer_column_type(column)
+        if column.lower() in self.FALSE_POSITIVE_COLUMNS:
+            return
+        
+        # Skip if already exists
+        if column in self.table_columns[table]["columns"]:
+            return
+        
+        # Add the column
+        self.table_columns[table]["columns"].add(column)
+        if infer_type and column not in self.table_columns[table]["column_types"]:
+            self.table_columns[table]["column_types"][column] = self.infer_column_type(column)
     
     def _extract_dict_references(self, content, filepath):
         """Extrait les références dictionary-style (row["column"], row.get("column"))."""
@@ -249,9 +264,6 @@ class SQLAnalyzer:
     def generate_yaml_manifest(self, output_file):
         """Génère un manifest YAML machine-readable avec colonnes et types inférés."""
         
-        # Filter out false positive table names
-        false_positive_tables = {'CREATE', 'for', 'tree', 'sqlite_master'}
-        
         # Préparer les données pour YAML
         manifest = {
             "schema_version": "1.0",
@@ -261,14 +273,14 @@ class SQLAnalyzer:
         
         for table, info in self.table_columns.items():
             # Skip false positive tables
-            if table in false_positive_tables:
+            if table in self.FALSE_POSITIVE_TABLES:
                 continue
                 
             if not info["columns"]:
                 continue
             
             # Only include tables with at least some reasonable columns (not all false positives)
-            valid_columns = [col for col in info["columns"] if col.lower() not in self.false_positive_columns]
+            valid_columns = [col for col in info["columns"] if col.lower() not in self.FALSE_POSITIVE_COLUMNS]
             
             if not valid_columns:
                 continue

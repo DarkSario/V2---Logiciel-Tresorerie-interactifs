@@ -312,7 +312,18 @@ REFERENCE_SCHEMA = {
 class DatabaseMigrator:
     """Gestionnaire de migration de base de données."""
     
-    def __init__(self, db_path: str, use_yaml_hints: bool = True):
+    # SQL reserved words that need quoting (subset of most common ones)
+    SQL_RESERVED_WORDS = {
+        'add', 'all', 'alter', 'and', 'as', 'asc', 'between', 'by', 'case', 'check',
+        'column', 'constraint', 'create', 'cross', 'default', 'delete', 'desc',
+        'distinct', 'drop', 'else', 'end', 'exists', 'foreign', 'from', 'full',
+        'group', 'having', 'in', 'index', 'inner', 'insert', 'into', 'is', 'join',
+        'key', 'left', 'like', 'limit', 'not', 'null', 'on', 'or', 'order', 'outer',
+        'primary', 'references', 'right', 'select', 'set', 'table', 'then', 'to',
+        'union', 'unique', 'update', 'values', 'when', 'where'
+    }
+    
+    def __init__(self, db_path: str, use_yaml_hints: bool = True, fuzzy_threshold: float = 0.75):
         self.db_path = db_path
         self.backup_path = None
         self.migration_log = []
@@ -321,6 +332,7 @@ class DatabaseMigrator:
         self.use_yaml_hints = use_yaml_hints
         self.schema_hints = None
         self.column_mappings = {}  # Track old_name -> new_name mappings
+        self.fuzzy_threshold = fuzzy_threshold  # Configurable fuzzy matching threshold
     
     def log(self, message: str, level: str = "INFO"):
         """Ajoute un message au log de migration."""
@@ -370,18 +382,21 @@ class DatabaseMigrator:
             self.log(f"Error loading schema hints: {e}", "WARNING")
             return False
     
-    def fuzzy_match_column(self, target_col: str, existing_cols: Set[str], threshold: float = 0.8) -> Optional[str]:
+    def fuzzy_match_column(self, target_col: str, existing_cols: Set[str], threshold: Optional[float] = None) -> Optional[str]:
         """
         Trouve une colonne existante qui correspond au nom cible (fuzzy/case-insensitive).
         
         Args:
             target_col: Nom de colonne recherché
             existing_cols: Ensemble des colonnes existantes dans la table
-            threshold: Seuil de similarité (0.0 à 1.0)
+            threshold: Seuil de similarité (0.0 à 1.0), uses instance default if None
         
         Returns:
             Nom de la colonne correspondante ou None
         """
+        if threshold is None:
+            threshold = self.fuzzy_threshold
+        
         target_lower = target_col.lower()
         
         # 1. Exact match (case-insensitive)
@@ -402,6 +417,26 @@ class DatabaseMigrator:
                 best_match = col
         
         return best_match
+    
+    def quote_identifier(self, identifier: str) -> str:
+        """
+        Quote SQL identifier if it's a reserved word or contains special characters.
+        
+        Args:
+            identifier: Column or table name
+            
+        Returns:
+            Quoted identifier if needed, otherwise original
+        """
+        # Quote if it's a reserved word
+        if identifier.lower() in self.SQL_RESERVED_WORDS:
+            return f'"{identifier}"'
+        
+        # Quote if it contains special characters
+        if not identifier.replace('_', '').isalnum():
+            return f'"{identifier}"'
+        
+        return identifier
     
     def get_column_type_from_hints(self, table: str, column: str) -> Optional[str]:
         """Récupère le type d'une colonne depuis les hints YAML."""
@@ -593,17 +628,22 @@ class DatabaseMigrator:
                                 self.log(f"  [WARNING] RENAME failed: {e}. Will try ADD + COPY instead.", "WARNING")
                         
                         # If rename not supported or failed, do ADD + COPY
+                        quoted_col = self.quote_identifier(col_name)
+                        
                         if default_value is None:
-                            alter_sql = f"ALTER TABLE {table} ADD COLUMN {col_name} {col_type}"
+                            alter_sql = f"ALTER TABLE {table} ADD COLUMN {quoted_col} {col_type}"
                         else:
-                            alter_sql = f"ALTER TABLE {table} ADD COLUMN {col_name} {col_type} DEFAULT {default_value}"
+                            alter_sql = f"ALTER TABLE {table} ADD COLUMN {quoted_col} {col_type} DEFAULT {default_value}"
                         
                         try:
                             self.log(f"  Adding new column '{col_name}' ({col_type})")
                             cursor.execute(alter_sql)
                             
                             # Copy data from fuzzy_match column to new column
-                            copy_sql = f"UPDATE {table} SET {col_name} = {fuzzy_match}"
+                            # Quote identifiers in case they're reserved words
+                            quoted_new = self.quote_identifier(col_name)
+                            quoted_old = self.quote_identifier(fuzzy_match)
+                            copy_sql = f"UPDATE {table} SET {quoted_new} = {quoted_old}"
                             self.log(f"  Copying data from '{fuzzy_match}' to '{col_name}'...")
                             cursor.execute(copy_sql)
                             
@@ -619,8 +659,8 @@ class DatabaseMigrator:
                     
                     # Case 2: No fuzzy match - just add the column
                     else:
-                        # Quote column name to handle reserved words
-                        quoted_col = f'"{col_name}"' if col_name.lower() in ('values', 'order', 'group', 'select', 'from', 'where', 'table') else col_name
+                        # Quote column name if it's a reserved word
+                        quoted_col = self.quote_identifier(col_name)
                         
                         if default_value is None:
                             alter_sql = f"ALTER TABLE {table} ADD COLUMN {quoted_col} {col_type}"
