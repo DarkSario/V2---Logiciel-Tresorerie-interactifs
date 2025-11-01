@@ -11,7 +11,7 @@ from pathlib import Path
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from scripts.update_db_structure import DatabaseMigrator, REFERENCE_SCHEMA
+from scripts.update_db_structure import DatabaseMigrator, REFERENCE_SCHEMA, get_latest_migration_report
 
 
 def create_test_database(db_path, missing_columns=True):
@@ -321,6 +321,123 @@ def test_generate_report():
             os.unlink(db_path)
 
 
+def test_report_path_in_reports_directory():
+    """Test that report is created in the reports directory."""
+    with tempfile.NamedTemporaryFile(suffix=".db", delete=False) as tmp:
+        db_path = tmp.name
+    
+    try:
+        create_test_database(db_path, missing_columns=True)
+        migrator = DatabaseMigrator(db_path)
+        
+        # Run the migration
+        success = migrator.run_migration()
+        
+        assert success is True
+        assert migrator.report_path is not None
+        
+        # Verify the report is in the reports directory
+        assert "reports" in migrator.report_path
+        assert "migration_report_success_" in migrator.report_path
+        assert os.path.exists(migrator.report_path)
+        
+        # Clean up
+        if os.path.exists(migrator.report_path):
+            os.unlink(migrator.report_path)
+        if migrator.backup_path and os.path.exists(migrator.backup_path):
+            os.unlink(migrator.backup_path)
+    finally:
+        if os.path.exists(db_path):
+            os.unlink(db_path)
+
+
+def test_failed_migration_report():
+    """Test that a failed migration generates an error report."""
+    with tempfile.NamedTemporaryFile(suffix=".db", delete=False) as tmp:
+        db_path = tmp.name
+    
+    # Constants for file permissions
+    READ_ONLY_PERMISSIONS = 0o444
+    READ_WRITE_PERMISSIONS = 0o644
+    
+    try:
+        create_test_database(db_path, missing_columns=True)
+        
+        # Make the database read-only to force a migration failure
+        os.chmod(db_path, READ_ONLY_PERMISSIONS)
+        
+        migrator = DatabaseMigrator(db_path)
+        success = migrator.run_migration()
+        
+        # Restore write permissions for cleanup
+        os.chmod(db_path, READ_WRITE_PERMISSIONS)
+        
+        # Migration should fail
+        assert success is False
+        assert len(migrator.errors) > 0
+        assert migrator.report_path is not None
+        
+        # Verify the report is marked as failed
+        assert "migration_report_failed_" in migrator.report_path
+        
+        # Verify report content contains error information
+        if os.path.exists(migrator.report_path):
+            with open(migrator.report_path, 'r') as f:
+                content = f.read()
+            
+            assert "FAILED" in content
+            assert "## Errors" in content
+            assert "## Recommended Actions" in content
+            
+            # Clean up report
+            os.unlink(migrator.report_path)
+        
+        if migrator.backup_path and os.path.exists(migrator.backup_path):
+            os.unlink(migrator.backup_path)
+    finally:
+        if os.path.exists(db_path):
+            try:
+                os.chmod(db_path, READ_WRITE_PERMISSIONS)
+                os.unlink(db_path)
+            except Exception:
+                pass
+
+
+def test_report_contains_all_required_sections():
+    """Test that generated reports contain all required sections."""
+    with tempfile.NamedTemporaryFile(suffix=".db", delete=False) as tmp:
+        db_path = tmp.name
+    
+    try:
+        create_test_database(db_path, missing_columns=True)
+        migrator = DatabaseMigrator(db_path)
+        
+        success = migrator.run_migration()
+        
+        assert migrator.report_path is not None
+        assert os.path.exists(migrator.report_path)
+        
+        with open(migrator.report_path, 'r') as f:
+            content = f.read()
+        
+        # Check required sections
+        assert "# Database Migration Report" in content
+        assert "**Date:**" in content
+        assert "**Database:**" in content
+        assert "**Status:**" in content
+        assert "## Summary" in content
+        assert "## Changes Applied" in content
+        assert "## Migration Log" in content
+        
+        # Clean up
+        os.unlink(migrator.report_path)
+        if migrator.backup_path and os.path.exists(migrator.backup_path):
+            os.unlink(migrator.backup_path)
+    finally:
+        if os.path.exists(db_path):
+            os.unlink(db_path)
+
+
 if __name__ == "__main__":
     # Run tests
     test_database_migrator_initialization()
@@ -346,5 +463,14 @@ if __name__ == "__main__":
     
     test_generate_report()
     print("✓ test_generate_report")
+    
+    test_report_path_in_reports_directory()
+    print("✓ test_report_path_in_reports_directory")
+    
+    test_failed_migration_report()
+    print("✓ test_failed_migration_report")
+    
+    test_report_contains_all_required_sections()
+    print("✓ test_report_contains_all_required_sections")
     
     print("\nAll tests passed!")
