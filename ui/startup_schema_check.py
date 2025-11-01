@@ -318,7 +318,7 @@ def execute_update(db_path: str, parent_window=None) -> Tuple[bool, str]:
         # Valider le chemin de la base de données pour éviter l'injection de commandes
         db_path = os.path.abspath(db_path)
         if not os.path.exists(db_path):
-            error_msg = f"❌ Le fichier de base de données n'existe pas : {db_path}"
+            error_msg = f"[ERROR] Le fichier de base de donnees n'existe pas : {db_path}"
             if parent_window:
                 messagebox.showerror("Erreur", error_msg, parent=parent_window)
             return False, error_msg
@@ -339,9 +339,9 @@ def execute_update(db_path: str, parent_window=None) -> Tuple[bool, str]:
         
         if result.returncode == 0:
             success_msg = (
-                "✅ Mise à jour de la base de données terminée avec succès !\n\n"
-                "Un rapport détaillé a été généré dans le répertoire reports/.\n"
-                "Une sauvegarde de votre base a été créée automatiquement."
+                "[SUCCESS] Mise a jour de la base de donnees terminee avec succes !\n\n"
+                "Un rapport detaille a ete genere dans le repertoire reports/.\n"
+                "Une sauvegarde de votre base a ete creee automatiquement."
             )
             
             if parent_window:
@@ -360,7 +360,7 @@ def execute_update(db_path: str, parent_window=None) -> Tuple[bool, str]:
             
             return True, success_msg
         else:
-            error_msg = f"❌ La mise à jour a échoué.\n\nDétails :\n{result.stderr[:ERROR_MESSAGE_MAX_LENGTH]}"
+            error_msg = f"[ERROR] La mise a jour a echoue.\n\nDetails :\n{result.stderr[:ERROR_MESSAGE_MAX_LENGTH]}"
             
             if parent_window:
                 # Afficher automatiquement le rapport d'erreur dans une fenêtre dédiée
@@ -373,12 +373,12 @@ def execute_update(db_path: str, parent_window=None) -> Tuple[bool, str]:
             return False, error_msg
             
     except subprocess.TimeoutExpired:
-        error_msg = "❌ La mise à jour a dépassé le délai d'attente."
+        error_msg = "[ERROR] La mise a jour a depasse le delai d'attente."
         if parent_window:
             messagebox.showerror("Erreur", error_msg, parent=parent_window)
         return False, error_msg
     except Exception as e:
-        error_msg = f"❌ Impossible d'exécuter la mise à jour : {e}"
+        error_msg = f"[ERROR] Impossible d'executer la mise a jour : {e}"
         
         if parent_window:
             messagebox.showerror("Erreur", error_msg, parent=parent_window)
@@ -592,7 +592,7 @@ def run_check(parent_window=None, db_path: str = "association.db") -> bool:
     
     if not missing_columns:
         # Tout est à jour, pas besoin d'afficher de fenêtre
-        print("✓ Database schema is up to date!")
+        print("[OK] Database schema is up to date!")
         return True
     
     # Afficher la fenêtre d'alerte

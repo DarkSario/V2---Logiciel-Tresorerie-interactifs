@@ -50,8 +50,24 @@ Pour mettre à jour manuellement la structure de la base de données :
 python scripts/update_db_structure.py --db-path association.db
 ```
 
+**Note pour Windows et environnements non-UTF-8** : Si vous rencontrez des erreurs d'encodage (ex: `charmap codec can't encode character`), forcez l'encodage UTF-8 avant d'exécuter le script :
+
+```powershell
+# Windows PowerShell
+$env:PYTHONIOENCODING = 'utf-8'
+python -u scripts/update_db_structure.py --db-path association.db
+```
+
+```bash
+# Linux/Mac (si nécessaire)
+export PYTHONIOENCODING=utf-8
+python -u scripts/update_db_structure.py --db-path association.db
+```
+
 Ou via le menu de l'application :
 **Administration → Mettre à jour la structure de la base**
+
+**Recommandation** : Utilisez Python 3.11+ qui offre une meilleure gestion des encodages sur toutes les plateformes.
 
 ### Vérification automatique au démarrage
 

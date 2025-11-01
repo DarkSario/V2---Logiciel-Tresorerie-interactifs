@@ -23,9 +23,17 @@ import os
 import sys
 import shutil
 import argparse
+import traceback
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Tuple, Set, Optional
+
+# Force UTF-8 encoding for stdout/stderr on Windows to avoid encoding errors
+try:
+    sys.stdout.reconfigure(encoding='utf-8')
+    sys.stderr.reconfigure(encoding='utf-8')
+except Exception:
+    pass
 
 
 # Schéma de référence basé sur l'analyse du code et init_db.py
@@ -413,12 +421,12 @@ class DatabaseMigrator:
                     try:
                         self.log(f"  Adding column: {col_name} ({col_type})")
                         cursor.execute(alter_sql)
-                        self.log(f"  ✓ Successfully added column '{col_name}' to table '{table}'")
+                        self.log(f"  [OK] Successfully added column '{col_name}' to table '{table}'")
                     except sqlite3.OperationalError as e:
                         # La colonne existe peut-être déjà (duplicate column)
                         error_msg = str(e).lower()
                         if "duplicate" in error_msg and "column" in error_msg:
-                            self.log(f"  ⚠ Column '{col_name}' already exists in table '{table}'", "WARNING")
+                            self.log(f"  [WARNING] Column '{col_name}' already exists in table '{table}'", "WARNING")
                         else:
                             raise
             
@@ -484,7 +492,7 @@ class DatabaseMigrator:
             f.write("# Database Migration Report\n\n")
             f.write(f"**Date:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
             f.write(f"**Database:** {self.db_path}\n")
-            f.write(f"**Status:** {'SUCCESS ✓' if success else 'FAILED ✗'}\n")
+            f.write(f"**Status:** {'SUCCESS' if success else 'FAILED'}\n")
             
             if self.backup_path:
                 f.write(f"**Backup:** {self.backup_path}\n")
@@ -499,29 +507,29 @@ class DatabaseMigrator:
                 f.write(f"- Total columns to add: {total_columns}\n")
                 
                 if success:
-                    f.write("\n✓ All columns were successfully added.\n")
+                    f.write("\n[OK] All columns were successfully added.\n")
                 else:
-                    f.write("\n✗ Migration failed. Changes have been rolled back.\n")
+                    f.write("\n[FAILED] Migration failed. Changes have been rolled back.\n")
                 
                 f.write("\n## Changes Applied\n\n")
                 for table, columns in missing_columns.items():
                     f.write(f"### Table: `{table}`\n\n")
                     for col_name, col_type, default_value in columns:
                         default_str = f" DEFAULT {default_value}" if default_value else ""
-                        status_icon = "✓" if success else "✗"
+                        status_icon = "[OK]" if success else "[FAILED]"
                         f.write(f"- {status_icon} Column: `{col_name}` ({col_type}{default_str})\n")
                     f.write("\n")
             
             if self.errors:
                 f.write("\n## Errors\n\n")
                 for error in self.errors:
-                    f.write(f"- ❌ {error}\n")
+                    f.write(f"- [ERROR] {error}\n")
                 
                 f.write("\n### Recovery Actions\n\n")
                 if self.backup_path and os.path.exists(self.backup_path):
-                    f.write(f"✓ Database was restored from backup: {self.backup_path}\n")
+                    f.write(f"[OK] Database was restored from backup: {self.backup_path}\n")
                 else:
-                    f.write("⚠ Warning: No backup was available for restore.\n")
+                    f.write("[WARNING] No backup was available for restore.\n")
             
             f.write("\n## Migration Log\n\n")
             f.write("```\n")
@@ -571,7 +579,7 @@ class DatabaseMigrator:
             missing_columns = self.detect_missing_columns(existing_schema)
             
             if not missing_columns:
-                self.log("✓ Database schema is up to date!")
+                self.log("[SUCCESS] Database schema is up to date!")
                 success = True
             else:
                 # Étape 4: Appliquer les migrations
@@ -579,21 +587,22 @@ class DatabaseMigrator:
                 success = self.apply_migrations(conn, missing_columns)
                 
                 if success:
-                    self.log("✓ Migrations completed successfully!")
+                    self.log("[SUCCESS] Migrations completed successfully!")
                     
                     # Étape 5: Optimiser la base de données
                     self.log("Optimizing database...")
                     self.optimize_database(conn)
                 else:
-                    self.log("✗ Migration failed, restoring backup...", "ERROR")
+                    self.log("[FAILED] Migration failed, restoring backup...", "ERROR")
                     conn.close()
                     self.restore_backup()
             
             conn.close()
             
         except Exception as e:
+            error_trace = traceback.format_exc()
             self.log(f"Unexpected error during migration: {e}", "ERROR")
-            self.errors.append(f"Unexpected error: {e}")
+            self.errors.append(f"Unexpected error: {e}\n{error_trace}")
             
             # Restaurer la sauvegarde en cas d'erreur
             self.log("Restoring backup due to error...", "ERROR")
