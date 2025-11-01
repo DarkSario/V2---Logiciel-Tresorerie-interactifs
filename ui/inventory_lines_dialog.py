@@ -33,6 +33,9 @@ from utils.app_logger import get_logger
 
 logger = get_logger("inventory_lines_dialog")
 
+# Debug print to confirm module loaded
+logger.debug("inventory_lines_dialog module loaded successfully")
+
 def _row_to_dict(row):
     """
     Convert sqlite3.Row to dict for safe .get() access.

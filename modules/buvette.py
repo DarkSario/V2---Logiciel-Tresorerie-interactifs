@@ -29,6 +29,20 @@ from utils.error_handler import handle_exception
 
 logger = get_logger("buvette_module")
 
+def _row_to_dict(row):
+    """
+    Convert sqlite3.Row to dict for safe .get() access.
+    
+    Args:
+        row: sqlite3.Row object
+        
+    Returns:
+        dict: Dictionary representation of the row
+    """
+    if row is None:
+        return None
+    return {key: row[key] for key in row.keys()}
+
 def _row_get_safe(row, key, default=None):
     """
     Safe accessor for sqlite3.Row that returns default value when column is absent.
