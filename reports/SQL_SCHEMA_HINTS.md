@@ -38,7 +38,7 @@ Il sert de référence pour les migrations et la maintenance du schéma de base 
 - **membres**: 40 colonnes, référencée dans 3 fichier(s)
 - **mouvements_stock**: 9 colonnes, référencée dans 1 fichier(s)
 - **retrocessions_ecoles**: 100 colonnes, référencée dans 2 fichier(s)
-- **sqlite_master**: 75 colonnes, référencée dans 4 fichier(s)
+- **sqlite_master**: 77 colonnes, référencée dans 4 fichier(s)
 - **stock**: 38 colonnes, référencée dans 5 fichier(s)
 - **tree**: 44 colonnes, référencée dans 0 fichier(s)
 - **valeurs_modeles_colonnes**: 2 colonnes, référencée dans 3 fichier(s)
@@ -1293,6 +1293,7 @@ Il sert de référence pour les migrations et la maintenance du schéma de base 
 - `bg`
 - `button_frame`
 - `capture_output`
+- `check`
 - `columns`
 - `command`
 - `confirm`
@@ -1353,6 +1354,7 @@ Il sert de référence pour les migrations et la maintenance du schéma de base 
 - `text`
 - `text_frame`
 - `text_widget`
+- `timeout`
 - `type`
 - `update_button`
 - `user_choice`
