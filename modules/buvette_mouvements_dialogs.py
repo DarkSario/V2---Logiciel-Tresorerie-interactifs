@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 from datetime import date
 import modules.buvette_mouvements_db as db
+from modules.db_row_utils import _rows_to_dicts
 
 class MouvementDialog(tk.Toplevel):
     def __init__(self, master, mouvement_id=None, on_save=None):
@@ -39,7 +40,9 @@ class MouvementDialog(tk.Toplevel):
         tk.Label(self, text="Événement (optionnel) :").pack(pady=4)
         self.evt_cb = ttk.Combobox(self, textvariable=self.evt_var, width=28, state="readonly")
         self.evt_dict = {"": None}
-        for r in db.list_events():
+        # Convert Row objects to dicts for safe access
+        events = _rows_to_dicts(db.list_events())
+        for r in events:
             label = f"{r['id']} - {r['name']}"
             self.evt_dict[label] = r["id"]
         self.evt_cb["values"] = list(self.evt_dict.keys())
